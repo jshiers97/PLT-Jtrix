@@ -1,0 +1,169 @@
+\documentclass[12pt]{article}
+\usepackage{courier}
+\setlength\parindent{0pt}
+
+\title{Jtrix}
+\author{
+\centering
+Arick Huang (ah3445) \and
+Azim Djuraev (ad3390) \and
+Jacob Shiers (jms2453) \and
+Levi Beckett (lb3064)
+}
+
+\begin{document}
+\maketitle
+\section{Overview}
+We aim to create a language that can facilitate matrix manipulation. We plan to give the user basic primitive types such as int, string, boolean, char, and float. We also will add matrix and confusion matrix primitives. We will require type verification of the primitives and functions to increase readability and we will type them using our compiler. Along with these primitives, we plan to offer simple operations for integers and floats such as multiplication, division, addition, and subtraction and strings and chars such as concatenation and comparison. Our matrix operations will consist of addition, subtraction, multiplication and transposing. For confusion matrices, we will create standard library functions that will allow the user to calculate confusion matrix statistics. To give the code simplicity and readability for a large audience our syntax will be very similar to Java.
+
+\section{Team Roles}
+Manager: Azim Djuraev\\
+Language Guru: Jacob Shiers\\
+System Architect: Levi Beckett\\
+Tester: Arick Huang
+
+\section{Motivation}
+Our motivation stems from the necessity of matrices in machine learning and the growing need for machine learning in technology and nearly every other sector. Many languages that offer powerful matrix manipulation, such as Haskell, are difficult to learn for people who are new to programming. By using Java-like syntax, our language can serve as a bridge for inexperienced coders looking to utilize matrices in their programming.
+
+\section{Language Features}
+\subsection{Data Types}
+In our program, we aim to add the following primitives similar to what one would see in Java:
+\begin{itemize}
+\item int
+\item float
+\item boolean
+\item char
+\item string
+\end{itemize}
+Furthermore, we would add a new data type: Matrix that should contain only integers or floats.\\
+We also plan to add structs that will contain many variables with unique names so that one can access them easily and funcs that will hold functions.
+\subsubsection{Example}
+{\fontfamily{pcr}\selectfont
+1: Matrix$<$2, 1$>$ newMatrix = [1 | 2];
+}
+\subsubsection{Example}
+{\fontfamily{pcr}\selectfont
+1: struct structure = $\{$\\
+2: \hspace*{1cm} Matrix m1 = [];\\
+3: $\}$
+}
+
+\subsection{Control Flow}
+The Jtrix language supports {\fontfamily{pcr}\selectfont { if, else if, else }} statements for conditionals, {\fontfamily{pcr}\selectfont { for, foreach, while }} as loops.
+
+\subsubsection{Conditional Statements}
+One would construct an if statement as shown below:\\
+{\fontfamily{pcr}\selectfont { 
+1: if (boolean expression) $\{$\\
+2: \hspace*{1cm} Statements\\
+3: $\}$\\
+4: else if (boolean expression) $\{$\\
+5: \hspace*{1cm} Statements\\
+6: $\}$\\
+7: else $\{$\\
+8: \hspace*{1cm} Statements\\
+9: $\}$ 
+}}
+
+\subsubsection{Loops}
+One would contruct a for loop as shown below:\\
+{\fontfamily{pcr}\selectfont { 
+1: for (int i = 0; i < 10; i = i + 1) $\{$\\
+2: \hspace*{1cm} Statements\\
+3: $\}$
+}}\medbreak
+One would construct a foreach loop as shown below:\\
+{\fontfamily{pcr}\selectfont { 
+1: foreach (x in matrix) $\{$\\
+2: \hspace*{1cm} Statements\\
+3: $\}$
+}}\medbreak
+One would construct a while loop as shown below:\\
+{\fontfamily{pcr}\selectfont { 
+1: while (i < 10) $\{$\\
+2: \hspace*{1cm} Statements\\
+3: $\}$
+}}
+\pagebreak
+\subsection{Operators}
+We plan to have the following operations for our language:
+\begin{figure}[h]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+Arithmetic Operations & Applies To \\ \hline
+Multiplication (a * b)        & int, float, Matrix  \\ \hline
+Division (a / b)              & int, float   \\ \hline
+Modulo (a $\%$ b)                & int  \\ \hline
+Addition (a + b)             & int, float, Matrix   \\ \hline
+Subtraction (a - b)     & int, float, Matrix  \\ \hline
+\end{tabular}
+\medbreak
+\begin{tabular}{|c|c|}
+\hline
+Relational Operations    & Applies To             \\ \hline
+Equality (a == b)               & int, boolean, float, Matrix             \\ \hline
+Inequality (a != b)               &  int, boolean, float, Matrix               \\ \hline
+Greater than  (a $>$ b)           & int, float    \\ \hline
+Greater than or equal to (a $>$= b) & int, float \\ \hline
+Less than (a $<$ b)               & int, float       \\ \hline
+Less than or equal to (a $<=$ b)    & int, float    \\ \hline
+\end{tabular}
+\medbreak
+\begin{tabular}{|c|c|}
+\hline
+Logical Operations & Applies To  \\ \hline
+And (a \&\& b)              & boolean \\ \hline
+Or (a $||$ b)                & boolean   \\ \hline
+Not (!a)               & boolean       \\ \hline
+\end{tabular}
+\medbreak
+\begin{tabular}{|c|c|}
+\hline
+Matrix Operations & Example                    \\ \hline
+Transpose         & matrix1\textasciicircum{}T \\ \hline
+\end{tabular}
+\end{figure}
+
+\subsection{Functions}
+For the language, we plan to implement functions as first-class objects. In order to create a function, one must include the word "function" in front of the method. One can see the example in the example program. Once one creates the function, one will be able to pass it as a value.
+\subsubsection{Example}
+{\fontfamily{pcr}\selectfont
+1: func getDeterminant(Matrix matrix) = findDeterminant;
+}
+
+\medbreak
+We also plan to add functions to perform row manipulation (i.e. switching rows).
+
+\subsection{Comments}
+In order to comment, one would have to use "//" to make the compiler ignore the line.
+\subsubsection{Example}
+{\fontfamily{pcr}\selectfont
+1: //Ignore this!
+}
+
+\section{Example Program}
+{\fontfamily{pcr}\selectfont
+1: function float findDeterminant(Matrix matrix) $\{$\\
+2:    \hspace*{1cm}if(matrix.columns != matrix.rows) $\{$\\
+3:        \hspace*{2cm}return 0;\\
+4:    \hspace*{1cm}$\}$\\
+5:   \hspace*{1cm}if(matrix.columns == 1) $\{$\\
+6:       \hspace*{2cm}return matrix[0][0];\\
+7:  \hspace*{1cm}$\}$\\
+8:    \hspace*{1cm}if(matrix.cols == 2) $\{$\\
+9:        \hspace*{2cm}return matrix[0][0] * matrix[1][1] - matrix[0][1] \\
+\hspace*{4cm}* matrix[1][0];\\
+10: \hspace*{1cm}$\}$\\
+11:    \hspace*{1cm}float determinant = 0;\\
+12:    \hspace*{1cm}for(int i = 0; i < n; i++) $\{$\\
+13:      \hspace*{2cm}Matrix spliced = matrix.spliceRow(0);\\
+14:      \hspace*{2cm}spliced = small.spliceColumn(0);\\
+15:      \hspace*{2cm}determinant += $(-1)^i$ * matrix[0][i] * \\
+\hspace*{4cm}findDeterminant(spliced);\\
+16: \hspace*{1cm}$\}$\\
+17:    \hspace*{1cm}return determinant;\\
+18: $\}$\\
+}
+
+\end{document}
