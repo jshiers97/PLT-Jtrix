@@ -1,12 +1,15 @@
-#J-Trix
+# J-Trix
 
-#Team Members
+# Team Members
 Manager: Azim Djuraev
+
 Language Guru: Jacob Shiers
+
 System Architect: Levi Beckett
+
 Tester: Arick Huang
 
-#Useful Git Commands
+# Useful Git Commands
 * git fetch --all
     * Allows you to get all relevant updates to all branches since your last fetch
 * git branch -a

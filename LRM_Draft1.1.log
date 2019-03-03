@@ -1,0 +1,191 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/W32TeX) (preloaded format=pdflatex 2016.9.15)  3 MAR 2019 14:07
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./LRM_Draft1.1.tex
+(./LRM_Draft1.1.tex
+LaTeX2e <2016/03/31> patch level 3
+Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
+(c:/texlive/2016/texmf-dist/tex/latex/base/report.cls
+Document Class: report 2014/09/29 v1.4h Standard LaTeX document class
+(c:/texlive/2016/texmf-dist/tex/latex/base/size12.clo
+File: size12.clo 2014/09/29 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@chapter=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(c:/texlive/2016/texmf-dist/tex/latex/listings/listings.sty
+(c:/texlive/2016/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks14
+)
+\lst@mode=\count88
+\lst@gtempboxa=\box26
+\lst@token=\toks15
+\lst@length=\count89
+\lst@currlwidth=\dimen103
+\lst@column=\count90
+\lst@pos=\count91
+\lst@lostspace=\dimen104
+\lst@width=\dimen105
+\lst@newlines=\count92
+\lst@lineno=\count93
+\lst@maxwidth=\dimen106
+
+(c:/texlive/2016/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
+\c@lstnumber=\count94
+\lst@skipnumbers=\count95
+\lst@framebox=\box27
+)
+(c:/texlive/2016/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2015/06/04 1.6 listings configuration
+))
+Package: listings 2015/06/04 1.6 (Carsten Heinz)
+
+(c:/texlive/2016/texmf-dist/tex/latex/graphics/color.sty
+Package: color 2016/07/10 v1.1e Standard LaTeX Color (DPC)
+
+(c:/texlive/2016/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package color Info: Driver file: pdftex.def on input line 147.
+
+(c:/texlive/2016/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2016/07/10 v0.06j Graphics/color for pdfTeX
+
+(c:/texlive/2016/texmf-dist/tex/generic/oberdiek/infwarerr.sty
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+)
+(c:/texlive/2016/texmf-dist/tex/generic/oberdiek/ltxcmds.sty
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count96
+))
+(c:/texlive/2016/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2015/06/04 1.6 listings language file
+)
+(./LRM_Draft1.1.aux)
+\openout1 = `LRM_Draft1.1.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+\c@lstlisting=\count97
+
+(c:/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count98
+\scratchdimen=\dimen107
+\scratchbox=\box28
+\nofMPsegments=\count99
+\nofMParguments=\count100
+\everyMPshowfont=\toks16
+\MPscratchCnt=\count101
+\MPscratchDim=\dimen108
+\MPnumerator=\count102
+\makeMPintoPDFobject=\count103
+\everyMPtoPDFconversion=\toks17
+) (./LRM_Draft1.1.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 2.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 2.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 2.
+
+Overfull \hbox (1.66043pt too wide) in paragraph at lines 32--32
+ \OT1/cmr/m/n/12 FINE PRINT-ING(PRINTING USED IN WHILE LOOP) [][]  
+ []
+
+[1
+
+
+{c:/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}])
+\tf@toc=\write3
+\openout3 = `LRM_Draft1.1.toc'.
+
+ [2]
+Chapter 1.
+[3
+
+]
+Underfull \hbox (badness 10000) in paragraph at lines 85--92
+
+ []
+
+
+Overfull \hbox (32.92516pt too wide) in paragraph at lines 85--92
+[] 
+ []
+
+[4] [5] [6] [7] [8]
+Chapter 2.
+[9
+
+]
+Overfull \hbox (7.99554pt too wide) in paragraph at lines 253--253
+[]\OT1/cmr/bx/n/17.28 MEMORY AL-LO-CA-TION PRO-CESSES? 
+ []
+
+[10]
+Chapter 3.
+[11
+
+]
+Chapter 4.
+[12
+
+]
+Chapter 5.
+
+Overfull \hbox (30.85942pt too wide) in paragraph at lines 268--268
+\OT1/cmr/bx/n/14.4 DE-FINE PRINT-ING(PRINTING USED IN WHILE
+ []
+
+[13
+
+] [14] (./LRM_Draft1.1.aux) )
+(\end occurred inside a group at level 1)
+
+### simple group (level 1) entered at line 87 ({)
+### bottom level 
+Here is how much of TeX's memory you used:
+ 2366 strings out of 493013
+ 32725 string characters out of 6137008
+ 139470 words of memory out of 5000000
+ 5938 multiletter control sequences out of 15000+600000
+ 9484 words of font info for 34 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 26i,6n,40p,522b,1538s stack positions out of 5000i,500n,10000p,200000b,80000s
+<c:/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx
+12.pfb><c:/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><c:
+/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb><c:/texlive/
+2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2016/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
+Output written on LRM_Draft1.1.pdf (14 pages, 94297 bytes).
+PDF statistics:
+ 70 PDF objects out of 1000 (max. 8388607)
+ 48 compressed objects within 1 object stream
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+
