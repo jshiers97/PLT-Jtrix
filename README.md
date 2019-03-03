@@ -19,6 +19,8 @@ Tester: Arick Huang
     * Stages file or folder for commit
 * git checkout [filename/folder]
     * Reverts file or folder to what it was before you changed it if in the remote branch repo
+* git checkout [branchname]
+    * Checks out branch
 * git checkout -b [branchname]
     * Creates new branch in local
 * git commit -m [message]
