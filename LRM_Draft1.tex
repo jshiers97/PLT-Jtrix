@@ -1,0 +1,301 @@
+\documentclass[12pt]{report}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+\tableofcontents
+
+\chapter{Lexical Conventions}
+
+\section{Comments}
+In Jtrix, \texttt{/*} opens a multi-line comment and \texttt{*/} closes the comment. \texttt{//} opens a single line comment that is ended by a newline. Comments are ignored and they do not nest. Comments cannot be contained in literals.
+
+\begin{lstlisting}
+// This is a single line comment.
+
+/* This is a multi-line comment,
+	so I can end it down here. */
+
+int x = 13; //Comments can follow lines of code
+\end{lstlisting}
+
+\section{White Space}
+\begin{lstlisting}
+//white space is defined as follows:
+
+' '	    //space character
+'\t'		//horizontal tab character
+'\n'	//newline character
+\end{lstlisting}
+White space is ignored, but can be utilized in cases of tokenization.
+\begin{lstlisting}
+//white space is used to differentiate between the single token >= and the two tokens > and =
+
+a >= b;   //this is a valid statement which evaluates whether a is greater than or equal to b, whereas
+a > = b;  //is not a valid statement
+\end{lstlisting}
+\section{Tokens}
+Jtrix uses five different tokens:
+
+ \textit{Identifiers}
+
+ \textit{Keywords}
+
+ \textit{Literals}
+
+ \textit{Separators}
+
+ \textit{Operator}
+\subsection{Identifiers}
+Jtrix Identifiers are any \textit{n}-length set of characters beginning with an English letter that is either uppercase (\texttt{A - Z}) or lowercase (\texttt{a - z}) that do not form a Jtrix Keyword. Identifiers may not start with integers (\texttt{0 - 9}) or with underscores (\texttt{\_}) but can include them in any following position.
+\begin{lstlisting}
+//valid identifiers
+thing
+thing1
+thingTwo
+ThingTwo
+Thing_Two
+
+/* Note: identifiers are case sensitive, so thingTwo and ThingTwo are treated distinctly different */
+\end{lstlisting}
+
+\subsection{Keywords}
+ADD CLASS ?
+The following ASCII character sequences are reserved words that may only be used as Jtrix Keywords:\\ \\
+{\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{c|c|c|c|c|c|c|c|c}
+	\color{blue}\texttt{break} & \color{blue}\texttt{boolean} & \color{blue}\texttt{char} & \color{blue}\texttt{col} & \color{blue}\texttt{continue} & \color{blue}\texttt{else} & \color{blue}\texttt{float} &	 \color{blue}\texttt{for} & \color{blue}\texttt{foreach} \\ \hline
+	\color{blue}\texttt{if} & \color{blue}\texttt{int} & \color{blue}\texttt{new} & \color{blue}\texttt{matrix} & \color{blue}\texttt{return} & \color{blue}\texttt{row} & \color{blue}\texttt{string} & \color{blue}\texttt{void} & \color{blue}\texttt{while}
+\end{tabular}
+
+\subsection{Operators (LIST ALL THE OPS BY PRECEDENCE)}
+Jtrix has both binary and unary operators. Operators are used in combination with variables or literals to create expressions. Binary operators are represented and evaluated in infix notation and unary operators are evaluated in prefix notation. Jtrix uses the following types of operators:
+
+ \textit{Arithmetic Operators}
+
+ \textit{Equivalence Operators}
+
+ \textit{Logical Operators}
+
+\subsubsection{Arithmetic Operators}
+\begin{lstlisting}
+//addition applies to int, float, matrix
+	+
+//subtraction applies to int, float, matrix
+	-
+//multiplication applies to int, float, matrix
+	*
+//division applies to int, float
+	/
+//modulo applies to int
+	%
+\end{lstlisting}
+\subsubsection{Equivalence Operators}
+\begin{lstlisting}
+//equality applies to int, boolean, float, matrix
+	==
+//inequality applies to int, boolean, float, matrix
+	!=
+//greater than applies to int, float
+	>
+//greater than or equal to applies to int, float
+	>=
+//less than applies to int, float
+	<
+//less than or equal to applies to int, float
+	<=
+\end{lstlisting}
+
+\subsubsection{Logical Operators}
+\begin{lstlisting}
+//all logic operators apply only to boolean
+
+//and
+	&&
+//or
+	||
+//not
+	!
+\end{lstlisting}
+
+\subsubsection{Unary Operators}
+The operator not ( \texttt{!} ) is used strictly as a unary operator. The minus sign ( \texttt{-} ) can be used as both a unary and binary operator.
+\begin{lstlisting}
+boolean a = true;
+return !a; // using not as a unary operator
+
+int pos1 = 1; 
+int neg1 = -1;  // using the minus sign as a unary operator
+return (neg1 - pos1); // using the minus as a binary operator
+\end{lstlisting}
+\subsection{Literals}
+Jtrix uses the following literals:
+
+ \textit{Integer}
+
+ \textit{Float}
+
+ \textit{Boolean}
+
+ \textit{Character}
+
+ \textit{String}
+
+\subsubsection{Integer Literals}
+Integer literals represent whole number decimal values using characters \\ \texttt{0 - 9} in a sequence
+\begin{lstlisting}
+//examples of integer literals:
+0
+1
+354234
+\end{lstlisting}
+
+\subsubsection{Float Literals}
+Float literals represent whole or non-whole number values. Floats must have a decimal point followed by at least one number \texttt{1 - 9}. Floats may have \texttt{0 - 9} preceding the decimal. Floats may be exponents in which case the sequence is concluded with \texttt{+} or \texttt{-} and \texttt{e} or \texttt{E}  and \texttt{0 - 9}.
+\begin{lstlisting}
+//examples of float literals:
+.3
+0.3
+3.6
+3.6e+3
+3.6E-3
+\end{lstlisting}
+
+\subsubsection{Boolean Literals}
+Boolean literals are \texttt{true} or \texttt{false}. The type \texttt{boolean} has two values that are represented by the boolean literals.
+
+\subsubsection{Character Literals}
+\begin{lstlisting}
+//examples of character literals:
+
+\end{lstlisting}
+\subsubsection{String Literals}
+String literals consist of zero or more character sequences enclosed within double quotes, \texttt{"}.  A backslash is used as an escape to represent special characters.
+\begin{lstlisting}
+//examples of String literals:
+"hello world"			// an 11 character string
+""                   // an empty string
+
+//special characters:
+"\n"  				// a string containing the newline character
+"\""					// a string containing the double quote character
+"\'"					// a string containing the single quote character
+\end{lstlisting}
+\subsection{Separators}
+Jtrix has the following separators:
+
+\begin{lstlisting}
+(  )    {  }    [  ]    ;    ,    .
+\end{lstlisting}
+
+\chapter{Data Types}
+
+\section{Primitive Data Types}
+Jtrix has 4 primitive types that represent a fixed length series of bytes:
+
+\textit{bool}  (one byte)
+
+\textit{char}  (one byte)
+
+\textit{int}   (four bytes)
+
+\textit{float} (eight bytes)
+
+\section{Standard Library Types}
+Jtrix has arrays, strings and matrices as built-in types that can be referred to as \textit{objects}. These built-in types are immutable and have methods that offer the user a large selection of operations. Arrays are not dynamic, meaning that they may only contain elements of the same type.
+\begin{lstlisting}
+String a = "foo";				// this is a string
+
+char[] charArr = ['a', 'b', 'c']	;			// this is an array of chars
+int[] numArr = [1, 2, 3]	;						// this is an array of ints
+
+matrix mat = [ 1, 2 ; 4, 5];	// this is a 2x2 matrix
+
+\end{lstlisting}
+
+\section{Mutability}
+All data types in Jtrix are immutable. The user can assign identifiers to each type but cannot overwrite the object that the identifier is assigned to. To effectively change a variable, the user reassigns the identifier to reference a different piece of data.
+\begin{lstlisting}
+/* this assigns variable x to integer literal 3 and then reassigns it to integer literal 4 */
+x = 3;
+x = 4;
+/* x is now referencing a different value, but the integer literal 3 did not change */
+
+// string example:
+strFoo = "Foo ";
+strBar = "Bar";
+strFoo = strFoo.concat(strBar);
+/* strFoo was reassigned to the concatenation of the literal values "Foo " and "Bar" to result in strFoo to reference "Foo Bar" */
+\end{lstlisting}
+
+\section{MEMORY ALLOCATION PROCESSES?}
+
+
+\chapter{Meaning of Identifiers NOT SURE WHAT THIS MEANS}
+
+\chapter{Declarations SHOULD THIS GO UNDER STATEMENTS?}
+Jtrix uses \textit{declarations} to introduce an item into the code. In Jtrix, all declarations are explicit with the aim of increasing the readability of the code to help solve runtime errors. Jtrix does not implicitly type declarations which reduces compiling errors that many implicitly typed languages experience.
+\section{Functions}
+\section{Variables}
+\section{Arrays}
+\section{Matrices}
+
+\chapter{Statements SHOULD THIS BE CHANGED TO CONTROL FLOW?}
+\section{Control Flow}
+Jtrix offers a number of \texttt{control flow} statements that are useful for iterating over data structures, executing expressions multiple times, and executing specific operations based on user defined conditions. 
+\subsection{While Statements HOW ARE WE GOING TO DEFINE PRINTING(PRINTING USED IN WHILE LOOP)}
+\textcolor{blue}{\texttt{while}} statements are used to iterate through a set of code based on a user defined boolean expression. The statement evaluates the expression and, if the expression is true, the code within the brackets will be executed.  After executing the code within the brackets, the loop will restart by reevaluating the expression and repeating this process as long as the statement is true.
+\begin{lstlisting}
+/* this code prints y and then concatenates y with foo until y is equal to x */
+string x = "foo foo foo ";
+string y = "";
+string foo = "foo ";
+while (x != y){ 
+	print(y);
+	y = y.concat(foo);
+}
+// first loop prints blank
+// second loop prints "foo "
+// third loop prints "foo foo "
+// fourth loop prints "foo foo foo " and terminates the loop
+\end{lstlisting}
+
+\subsection{For Statements WHAT IS OUR MEMORY/SCOPE?}
+\textcolor{blue}{\texttt{for}} statements are similar to while statements, however they require the variable used in the boolean statement to be initialized within the loop. Therefore the scope of the variable is only within the for loop which can be useful for writing multiple loops. \textcolor{blue}{\texttt{for}} loops define 3 arguments. The first initializes a variable, the second is the conditional statement, and the third is an expression to change the value of the variable.
+\begin{lstlisting}
+for( int i = 0; i < 5 ; i = i + 1 ){
+	//some code
+	}
+	
+\end{lstlisting}
+
+
+
+
+
+
+
+
+\end{document}
