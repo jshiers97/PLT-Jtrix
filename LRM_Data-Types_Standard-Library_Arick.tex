@@ -1,0 +1,156 @@
+\documentclass[12pt]{report}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage[left=2cm, right=2cm, top=2cm]{geometry}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+\tableofcontents
+
+\chapter{Data Types}
+
+\section{Primitive Data Types}
+Jtrix has 4 primitive types that represent a fixed length series of bytes:
+
+\textit{bool}  (one byte)
+
+\textit{char}  (one byte)
+
+\textit{int}   (four bytes)
+
+\textit{float} (eight bytes)
+
+\section{Standard Library Types}
+\subsection{Arrays}
+Jtrix supports the arrays, denoted \textit{type[] arrayName}, that either takes an empty array of a certain size or an array with data in it. Once created, the array's length can no longer be changed, but the elements inside can be.
+\begin{lstlisting}
+int[] intArr = [1, 2, 3]; // an array of integers
+print(intArr[0]); // 1
+\end{lstlisting}
+\subsection{Strings}
+Jtrix also supports strings that are essentially sequences of characters. The strings must contain only ASCII characters.
+\begin{lstlisting}
+String a = "foo";				// this is a string
+\end{lstlisting}
+\subsection{Matrices}
+One of Jtrix's main features is the matrix. In order to create a matrix of size n $\times$ m, one must first specify the size in the initialization of the matrix. One can access element $a_{i,j}$, one would write it as if the matrix were a 2 $\times$ 2 array.
+\begin{lstlisting}
+Matrix<2, 2> mat = [1, 2; 3, 4]; // a 2 x 2 matrix
+print(mat[1][1]); // 4 
+\end{lstlisting}
+
+\section{Mutability}
+All data types in Jtrix are immutable. The user can assign identifiers to each type but cannot overwrite the object that the identifier is assigned to. To effectively change a variable, the user reassigns the identifier to reference a different piece of data.
+\begin{lstlisting}
+/* this assigns variable x to integer literal 3 and then reassigns it to integer literal 4 */
+x = 3;
+x = 4;
+/* x is now referencing a different value, but the integer literal 3 did not change */
+
+// string example:
+strFoo = "Foo ";
+strBar = "Bar";
+strFoo = strFoo.concat(strBar);
+/* strFoo was reassigned to the concatenation of the literal values "Foo " and "Bar" to result in strFoo to reference "Foo Bar" */
+\end{lstlisting}
+
+\section{Casting}
+While Jtrix does not implicity cast variables, one can explicitly cast types. For primitive types, as long as one can properly convert from one type to another (i.e. the char '9' can be converted to int while the char 'a' cannot). One can only explicitly cast the following:
+\begin{lstlisting}
+int(*float*); // converts float to int
+float(*int*); // converts int to float
+String(*int*); // converts int to str
+String(*float*); // converts float to str
+String(*char*); // converts char to str
+\end{lstlisting}
+
+\chapter{Standard Library}
+\section{Matrices}
+For matrices, Jtrix will support basic operations such as returning a specific column or row, removing columns or rows, and switching rows.
+\begin{figure}[h]
+\begin{tabular}{|l|l|}
+\hline
+Operation            & Result                                                                                                                                               \\ \hline
+mat.col(x)           & Returns an array of the (x + 1)-th column                                                                                                            \\ \hline
+mat.row(x)           & Returns an array of the (x + 1)-th row                                                                                                               \\ \hline
+mat.spliceColumn(k)  & \begin{tabular}[c]{@{}l@{}}Returns a n x (m - 1) matrix that contains the same information as the input\\ without the (k + 1)-th column\end{tabular} \\ \hline
+mat.spliceRow(k)     & \begin{tabular}[c]{@{}l@{}}Returns a (n - 1) x m matrix that contains the same information as the input\\ without the (k + 1)-th row\end{tabular}    \\ \hline
+mat.switchRows(x, y) & Returns a n x m matrix that swaps the (x + 1)-th row and the (y + 1)-th row                                                                          \\ \hline
+\end{tabular}
+\end{figure}
+\begin{lstlisting}
+Matrix<2,2> mat = [1, 2; 3, 4];
+mat.col(1); // [2, 4]
+mat.row(0); // [1, 2]
+mat.spliceColumn(1); //[1; 3]
+mat.spliceRow(0); // [3, 4]
+mat.switchRows(0, 1); // [3, 4; 1, 2]
+\end{lstlisting}
+
+\pagebreak
+
+\section{Strings}
+Jtrix will support the basic string operations: indexing, concatenation, changing the case of the string (uppercase or lowercase), and splitting. Since strings are immutable in Jtrix, each of these operations will return a new string instead of modifying the string input.
+\begin{figure}[h]
+\begin{tabular}{|l|l|}
+\hline
+Operation     & Result                                                                          \\ \hline
+str{[}n{]}    & Returns the n-th character of str as a string                                   \\ \hline
+str1 + str2   & Returns a new string concatenating str1 and str2                                \\ \hline
+str.toUpper() & Returns a string equal to str with all the letters in uppercase                 \\ \hline
+str.toLower() & Returns a string equal to str with all the letters in lowercase                 \\ \hline
+str.split(n)  & Returns a substring of str from the first character to the (n - 1)-th character \\ \hline
+\end{tabular}
+\end{figure}
+\begin{lstlisting}
+string hello = "Hello World!";
+print(hello[2]); // "l"
+string bye = "Good bye!";
+print(hello + bye); // "Hello World!Good bye!"
+print(hello.toUpper()); // "HELLO WORLD!"
+print(hello.toLower()); // "hello world!"
+print(hello.split(5)); // "Hello" 
+\end{lstlisting}
+\section{Print}
+\textit{print(x)} will return a string version of what x is to the standard output. For primitive types, it would return the variable after being casted to a string. For arrays, the string representation would be in the form \textit{[ elements ]}. For matrices, the string representation would be in the form \textit{[row n]}, with each row on a different line. Print implicitly adds a new line character at the end of the converted input.
+\begin{lstlisting}
+int x = 5;
+print(x); // 5
+
+float[] floatArr = [1.0, 2.0, 1.5, 3.0];
+print(floatArr); // [1.0, 2.0, 1.5, 3.0]
+
+Matrix<3,3> mat3 = [1, 2, 3; 4, 5, 6; 7, 8, 9];
+print(mat3);
+/* 
+[1, 2, 3]
+[4, 5, 6]
+[7, 8, 9]
+*/
+\end{lstlisting}
+    
+
+
+
+\end{document}
