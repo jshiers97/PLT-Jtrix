@@ -1,0 +1,129 @@
+\documentclass[12pt]{report}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+\tableofcontents
+
+
+\chapter{Declarations and Statements}
+Jtrix uses \textit{declarations} to introduce an item into the code. In Jtrix, all declarations are explicit with the aim of increasing the readability of the code to help solve runtime errors. Jtrix does not implicitly type declarations which reduces compiling errors that many implicitly typed languages experience. Jtrix offers a number of \texttt{control flow} statements that are useful for iterating over data structures, executing expressions multiple times, and executing specific operations on user defined conditions. 
+\section{Functions}
+Functions are statements that can be executed in JTrix. Functions may take parameters as inputs. Functions may return any of the 4 primitive types in JTrix. Primitive function parameters are passed by value in JTrix. For other data structures like matrices, performing operations on that matrix variable will be reflected in all variables that point to that specific matrix in memory. 
+\section{Variables}
+Variables are names for objects that refers to a location in the memory where they are stored. 
+\subsection{Primitives}
+Variables can be of the 4 primitive types in Jtrix: int, bool, char, and float.\\ bool variables can have value true or false \\ int variables can have max/min 32-bit integer values from --2,147,483,648 to 2,417,483,647 \\ char variables can have any value ['a' - 'z'] or ['A' - 'Z'] or ['0' - '9'] \\ float variables can have max/min 32-bit value from -3.4E+38 to +3.4E+38 
+\subsection{Declaration}
+Variables are of the type declared before the variable name. 
+\begin{lstlisting}
+int x; 
+float y; 
+char z; 
+bool t; 
+\end{lstlisting}
+
+\section{Arrays}
+\subsection{Declaring and Initializing Arrays}
+JTrix Arrays are used to store multiple values into a single data structure. These values must be of type int or float. The size of an array is fixed, once it has been initialized its size cannot be changed. 
+\begin{lstlisting}
+int[] x= {1, 2, 3, 4, 5}; //array x is of type int and of size 5
+\end{lstlisting}
+\subsection{Array Manipulation}
+There are a variety of operations that can be performed on arrays. These include addition, subtraction, and indexing. 
+\begin{lstlisting}
+int[] x={1,2,3,4,5};
+int[] y={1,2,3,4,5};
+z= x + y; 
+//z={2,4,6,8,10}
+//x[0]=1
+\end{lstlisting}
+\section{Matrices}
+\subsection{Declaring Matrices}
+JTrix matrices are data structures that allow you to store a two dimensional array of numbers. They can be declared by specifying the number of rows and columns. 
+\begin{lstlisting}
+matrix mat [3] [5] ; //declares a matrix "mat" with 3 rows and 5 columns 
+\end{lstlisting}
+\subsection{Initializing matrices}
+Matrices can be initialized to contain either elements of type float or int. 
+\begin{lstlisting}
+matrix mat= [1, 2 ; 4, 5] 
+//mat is a 2 x 2 matrix 
+\end{lstlisting}
+\subsection{Matrix Manipulation}
+There are a variety of operators for performing mathematical operations on matrices. These include addition, multiplication, 
+subtraction, determinant, and dot product. 
+\begin{lstlisting}
+matrix a=[ 1, 2 ; 3, 4]
+matrix b=[ 5, 6 ; 7, 8]
+matrix c= a + b
+//c is [6, 8 ; 10, 12]
+\end{lstlisting}
+\section{Control Flow}
+\subsection{While Statements}
+\textcolor{blue}{\texttt{while}} statements are used to iterate through a set of code based on a user defined boolean expression. The statement evaluates the expression and, if the expression is true, the code within the brackets will be executed. After executing the code within the brackets, the loop will restart by reevaluating the expression and repeating this process a long as the statement is true. 
+\begin{lstlisting}
+/* this code prints y and then concatenates y with foo until y is equal to x*/
+string x="foo foo foo"; 
+string y =  " " ; 
+string foo = "foo"; 
+while (x !=y){
+	print(y);
+	y=y.concat(foo);
+}
+
+// first loop prints blank
+// second loop prints "foo "
+// third loop prints "foo foo "
+// fourth loop prints "foo foo foo " and terminates the loop
+\end{lstlisting}
+
+\subsection{For Statements}
+\textcolor{blue}{\texttt{for}} statements are similar to while statements, however they require the variable used in the boolean statement to be initialized within the loop. Therefore the scope of the variable is only within the for loop which can be useful for writing multiple loops. \textcolor{blue}{\texttt{for}} loops define 3 arguments. The first initializes a variable, the second is the conditional statement, and the third is an expression to change the value of the variable.
+\begin{lstlisting}
+for( int i = 0; i < 5 ; i = i + 1 ){
+	//some code
+	}	
+\end{lstlisting}
+
+\subsection{If-Else Statements}
+\textcolor{blue}{\texttt{if-else}} statements consist of a condition and a serious of statements. The series of statements are evaluated only if the condition is True, otherwise, the program will continue unless an optional else clause is added. 
+\begin{lstlisting}
+if(x=6){
+	print(x);
+}
+else{
+	print(6);
+}
+\end{lstlisting}
+
+
+
+
+
+
+
+
+\end{document}
