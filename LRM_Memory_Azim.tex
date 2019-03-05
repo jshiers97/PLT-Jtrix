@@ -1,0 +1,30 @@
+\documentclass[12pt]{report}
+
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+\section{Memory}
+Jtrix memory allocation works similar to Java, in that memory allocation and deallocation is done automatically. Garbage collection works though a simple reference-counting mechanism that deallocated memory with no references. Thus, variable declarations automatically assign variables to a memory resource. When the variable goes out of scope, that memory resource is automatically freed. Variables are generally stored on the stack, with the exception of matrices. Because matrices contain subarrays (i.e. matrix.rows or matrix.cols), they are stored on the heap. This dynamic allocation allows for matrices to be passed along threads easily.
+\end{document}
