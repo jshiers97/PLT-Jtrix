@@ -45,9 +45,11 @@ rule token =
         | '[' { LBRACKET }
         | ']' { RBRACKET }
         | '.' { DOT }
+        | ':' { COLON }
         | "int[]" { INTARR }
         | "float[]" { FLOATARR }
         | "print" { PRINT }
+        | "Matrix<" (['1' - '9']['0' - '9']* as row) ',' (['1' - '9']['0' - '9']* as col) '>' { MATRIX(int_of_string row, int_of_string col) }
         | "//" { inline_comment lexbuf }
         | "/*" { multiline_comment lexbuf }
         | eof { EOF }

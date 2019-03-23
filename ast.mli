@@ -1,19 +1,32 @@
-type operator = Add | Sub | Mul | Div | Eq | Neq | Less | Leq | Greater | Geq | And | Or
+type operator = Add | Sub | Mul | Div | Eq | Neq | Lt | Leq | Gt | Geq | And | Or | Mod
 type unaryop = Not | Neg
 type ty = Int | Float | Bool | Char | Void
+type bind = ty * string
 
 type expr =
     Binop of expr * operator * expr
-    | Lit of int
-    | Seq of expr * expr
-    | Asn of string * expr
-    | Var of string
-    | P of expr
-    | Pr of string
+    | Unop of unaryop * expr
+    | IntLit of int
+    | FloatLit of float
     | StringLit of string
-
-
+    | CharLit of char
+    | BoolLit of bool
+    | Variable of string
+    | Assign of ty * string * expr
+    | Call of string * expr list
+    | Noexpr
 type statement =
-    | PrintS of string
-    | Print of expr
+    | Block of statement list
     | Expr of expr
+    | Return of expr
+    | If of expr * statement * statement
+    | For of expr * expr * expr * statement
+    | While of expr * statement
+    | Foreach of expr * expr * statement
+type function_declaration = {
+    fty: ty;
+    fname: string;
+    finputs: bind list; 
+    body: statement list;
+}
+type program = function_declaration list
