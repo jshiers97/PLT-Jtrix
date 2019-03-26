@@ -1,3 +1,0 @@
-#J-Trix
-
-#Team Members
