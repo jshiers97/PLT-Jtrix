@@ -31,7 +31,8 @@ let translate (globals, functions) =
   and i8_t       = L.i8_type     context
   and i1_t       = L.i1_type     context
   and float_t    = L.double_type context
-  and void_t     = L.void_type   context in
+  and void_t     = L.void_type   context 
+  and string_t   = L.pointer_type (L.i8_type context) in
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -39,6 +40,7 @@ let translate (globals, functions) =
     | A.Bool  -> i1_t
     | A.Float -> float_t
     | A.Void  -> void_t
+    | A.String -> string_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -112,6 +114,7 @@ let translate (globals, functions) =
 	SLiteral i  -> L.const_int i32_t i
       | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
       | SFliteral l -> L.const_float_of_string float_t l
+      | SStrLit l   -> L.const_inttoptr (L.const_stringz context l) string_t
       | SNoexpr     -> L.const_int i32_t 0
       | SId s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in

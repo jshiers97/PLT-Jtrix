@@ -6,10 +6,10 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING
 %token <int> LITERAL
 %token <bool> BLIT
-%token <string> ID FLIT
+%token <string> ID FLIT STRINGLITERAL
 %token EOF
 
 %start program
@@ -57,6 +57,7 @@ typ:
   | BOOL  { Bool  }
   | FLOAT { Float }
   | VOID  { Void  }
+  | STRING { String } 
 
 vdecl_list:
     /* nothing */    { [] }
@@ -87,6 +88,7 @@ expr:
     LITERAL          { Literal($1)            }
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
+  | STRINGLITERAL    { StrLit($1)             }
   | ID               { Id($1)                 }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
