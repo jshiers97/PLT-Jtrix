@@ -1,6 +1,6 @@
 (* Ocamllex scanner for MicroC *)
 
-{ open Microcparse }
+{ open Jtrixparse }
 
 let digit = ['0' - '9']
 let digits = digit+
