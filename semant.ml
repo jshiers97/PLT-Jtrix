@@ -42,7 +42,8 @@ let check (globals, functions) =
 			                         ("printb", Bool);
 			                         ("printf", Float);
                                                  ("printbig", Int);
-                                                 ("println", String) ]
+                                                 ("println", String);
+                                                 ("printarr", IntArr) ]
   in
 
   (* Add function name to symbol table *)
@@ -97,6 +98,7 @@ let check (globals, functions) =
       | Fliteral l -> (Float, SFliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | StrLit l   -> (String, SStrLit l)
+      | IntArrLit l -> (IntArr, SIntArrLit l)
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 

@@ -32,7 +32,8 @@ let translate (globals, functions) =
   and i1_t       = L.i1_type     context
   and float_t    = L.double_type context
   and void_t     = L.void_type   context 
-  and string_t   = L.pointer_type (L.i8_type context) in
+  and string_t   = L.pointer_type (L.i8_type context) 
+  and int_arr_t  = L.pointer_type (L.i32_type context) in
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -41,6 +42,7 @@ let translate (globals, functions) =
     | A.Float -> float_t
     | A.Void  -> void_t
     | A.String -> string_t
+    | A.IntArr -> int_arr_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -51,6 +53,11 @@ let translate (globals, functions) =
         | _ -> L.const_int (ltype_of_typ t) 0
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
+  
+  let printarr_t : L.lltype =
+      L.var_arg_function_type i32_t [| L.pointer_type i32_t |] in
+  let printarr_func : L.llvalue =
+      L.declare_function "printarr" printarr_t the_module in
 
   let printf_t : L.lltype = 
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -116,7 +123,18 @@ let translate (globals, functions) =
       | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
       | SFliteral l -> L.const_float_of_string float_t l
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
-                       L.build_global_stringptr str_wo_qt str_wo_qt builder
+                       L.build_global_stringptr str_wo_qt str_wo_qt  builder
+      | SIntArrLit a ->
+                        let s =L.build_array_alloca i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
+                        for i = 0 to ((List.length a)-1) do
+                        let t = Array.of_list  [(L.const_int i32_t i)] in
+                        let ptr = L.build_gep s t "" builder in
+                        L.build_store (L.const_int i32_t (List.nth a i)) ptr builder
+                        done;
+                        let t = Array.of_list [(L.const_int i32_t (List.length a))] in
+                        let ptr = L.build_gep s t "" builder in
+                        let store = L.build_store (L.const_int i32_t 0) ptr builder in
+                        s
       | SNoexpr     -> L.const_int i32_t 0
       | SId s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in
@@ -171,6 +189,8 @@ let translate (globals, functions) =
 	    "printf" builder
       | SCall ("println", [e]) ->
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
+      | SCall ("printarr", [e]) ->
+                      L.build_call printarr_func [| (expr builder e) |] "printarr" builder
       | SCall (f, args) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
