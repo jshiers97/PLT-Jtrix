@@ -4,6 +4,7 @@
 
 let digit = ['0' - '9']
 let digits = digit+
+let flt = digits '.'  digit* ( ['e' 'E'] ['+' '-']? digits )?
 let sp = (' ')*
 
 rule token = parse
@@ -46,8 +47,14 @@ rule token = parse
         let  sep_arr = List.map String.trim (String.split_on_char ','  int_arr) in
         List.map int_of_string sep_arr
         ) } 
+| '[' (sp (flt ',' sp)* (flt)? sp as flt_arr) ']'  {  FLTARRLIT(
+        let  sep_arr = List.map String.trim (String.split_on_char ','  flt_arr) in
+        List.map float_of_string sep_arr
+        ) }
+| "int[]" { INTARR }
+| "float[]" { FLTARR }
 | digits as lxm { LITERAL(int_of_string lxm) }
-| digits '.'  digit* ( ['e' 'E'] ['+' '-']? digits )? as lxm { FLIT(lxm) }
+| flt  as lxm { FLIT(lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*     as lxm { ID(lxm) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }

@@ -9,6 +9,7 @@ and sx =
   | SBoolLit of bool
   | SStrLit of string
   | SIntArrLit of int list
+  | SFltArrLit of float list
   | SId of string
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
@@ -43,7 +44,10 @@ let rec string_of_sexpr (t, e) =
   | SBoolLit(false) -> "false"
   | SFliteral(l) -> l
   | SStrLit(l) -> l
-  | SIntArrLit(l) -> "hi"
+  | SIntArrLit(l) -> let str_arr = List.map string_of_int l in
+                     "[" ^ (String.concat ", " str_arr) ^ "]"
+  | SFltArrLit(l) -> let str_arr = List.map string_of_float l in
+                     "[" ^ (String.concat ", " str_arr) ^ "]" 
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
