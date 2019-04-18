@@ -1,7 +1,9 @@
 /* Ocamlyacc parser for MicroC */
 
 %{
+
 open Ast
+
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
@@ -9,9 +11,10 @@ open Ast
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING
 %token <int> LITERAL
 %token <bool> BLIT
-%token <string> ID FLIT STRINGLITERAL
+%token <string> ID FLIT STRINGLITERAL ARR
 %token <int list> INTARRLIT
 %token <float list> FLTARRLIT
+%token <string * int> ARRGE
 %token EOF
 
 %start program
@@ -60,8 +63,7 @@ typ:
   | FLOAT { Float }
   | VOID  { Void  }
   | STRING { String }
-  | INTARR { IntArr }
-  | FLTARR { FltArr } 
+  | ARR { Arr($1) }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -93,9 +95,10 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
-  | INTARRLIT        { IntArrLit($1)          }
-  | FLTARRLIT        { FltArrLit($1)          }
+  | INTARRLIT        { ArrLit("int", IL($1))  }
+  | FLTARRLIT        { ArrLit("float", FL($1)) }
   | ID               { Id($1)                 }
+  | ARRGE            { ArrGe(fst $1, snd $1)  }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
   | expr TIMES  expr { Binop($1, Mult,  $3)   }

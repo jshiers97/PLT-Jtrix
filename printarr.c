@@ -1,10 +1,11 @@
 #include <stdio.h>
 
 void printarr(int size, int* a) {
-	int* b = 0;
+	int* b = ++a;
 	int c = 0;
+	int d = *b++;
 	printf("[");
-	for(b = a; c < size ; c++) {
+	for(; c < d ; c++) {
 		if(c < size - 1) {
 			printf("%d, ", *b++);
 		}

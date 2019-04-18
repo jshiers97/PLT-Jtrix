@@ -43,8 +43,8 @@ let check (globals, functions) =
 			                         ("printf", Float);
                                                  ("printbig", Int);
                                                  ("println", String);
-                                                 ("printarr", IntArr);
-                                                 ("printfltarr", FltArr)  ]
+                                                 ("printarr", Arr ("int"));
+                                                 ("printfltarr", Arr ("float"))  ]
   in
 
   (* Add function name to symbol table *)
@@ -99,8 +99,16 @@ let check (globals, functions) =
       | Fliteral l -> (Float, SFliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | StrLit l   -> (String, SStrLit l)
-      | IntArrLit l -> (IntArr, SIntArrLit l)
-      | FltArrLit l -> (FltArr, SFltArrLit l)
+      | ArrLit (s, l)   ->
+          let x = match s with
+          | "int" -> (Arr("int"), SArrLit (s, l))
+          | "float" -> (Arr("float"), SArrLit (s, l)) in
+          x;
+      | ArrGe (v, i) -> 
+          let ele_typ = match (type_of_identifier v) with
+          | Arr ("int") -> Int
+          | Arr ("float") -> Float in
+          (ele_typ, SArrGe(v, i))
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 

@@ -5,7 +5,9 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void | String | IntArr | FltArr
+type typ = Int | Bool | Float | Void | String | Arr of string
+
+type num_list = IL of int list | FL of float list
 
 type bind = typ * string
 
@@ -14,8 +16,8 @@ type expr =
   | Fliteral of string
   | BoolLit of bool
   | StrLit of string
-  | IntArrLit of int list
-  | FltArrLit of float list
+  | ArrLit of string * num_list
+  | ArrGe of string * int
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -67,8 +69,8 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | StrLit(l) -> l
-  | IntArrLit(l) -> "hi"
-  | FltArrLit(l) -> "hi"
+  | ArrLit(s, l) -> s
+  | ArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
@@ -97,8 +99,7 @@ let string_of_typ = function
   | Float -> "float"
   | Void -> "void"
   | String -> "string"
-  | IntArr -> "intarr"
-  | FltArr -> "fltarr"
+  | Arr e -> e ^ "arr"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
