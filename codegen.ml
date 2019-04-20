@@ -138,6 +138,11 @@ let translate (globals, functions) =
                          let arr = L.build_load (lookup v) ""  builder in
                          let ptr = L.build_gep arr t "" builder in
                          L.build_load ptr "" builder
+      | SArrSe(v, i, (ty, e)) -> let t = Array.of_list [(L.const_int i32_t (i+2))] in
+                           let arr = L.build_load (lookup v) "" builder in
+                           let ptr = L.build_gep arr t "" builder in
+                           let typ_e = expr builder (ty, e) in
+                           L.build_store (typ_e)  ptr builder
       | SArrLit (t, a) -> 
           let typ = match a with
                 | IL l -> let s = L.build_array_alloca i32_t (L.const_int i32_t ((List.length l)+2)) "" builder in 

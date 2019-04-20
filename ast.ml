@@ -18,6 +18,7 @@ type expr =
   | StrLit of string
   | ArrLit of string * num_list
   | ArrGe of string * int
+  | ArrSe of string * int * expr
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -71,6 +72,7 @@ let rec string_of_expr = function
   | StrLit(l) -> l
   | ArrLit(s, l) -> s
   | ArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
+  | ArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_expr e)
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2

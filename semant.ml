@@ -107,8 +107,17 @@ let check (globals, functions) =
       | ArrGe (v, i) -> 
           let ele_typ = match (type_of_identifier v) with
           | Arr ("int") -> Int
-          | Arr ("float") -> Float in
+          | Arr ("float") -> Float 
+          | _ -> raise (Failure "Variable is not an array") in
           (ele_typ, SArrGe(v, i))
+      | ArrSe (v, i, e) ->
+          let ele_type_arr = match (type_of_identifier v) with
+          | Arr ("int") -> Int
+          | Arr ("float") -> Float
+          | _ -> raise (Failure "Variable is not an array") in
+          if (ele_type_arr = (fst (expr e))) then 
+                (ele_type_arr, SArrSe(v, i, (expr e)))
+          else raise (Failure ("expected type " ^ (string_of_typ ele_type_arr) ^ " but received an expression of type " ^ string_of_typ (fst (expr e))))
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
