@@ -9,8 +9,6 @@ type typ = Int | Bool | Float | Void | String | Arr of string
 
 type num_list = IL of int list | FL of float list
 
-type bind = typ * string
-
 type expr =
     Literal of int
   | Fliteral of string
@@ -25,6 +23,8 @@ type expr =
   | Assign of string * expr
   | Call of string * expr list
   | Noexpr
+
+type bind = V_Decl of typ * string * expr 
 
 type stmt =
     Block of stmt list
@@ -103,11 +103,13 @@ let string_of_typ = function
   | String -> "string"
   | Arr e -> e ^ "arr"
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl = function
+    V_Decl(t, id, Noexpr) -> string_of_typ t ^ " " ^ id ^ ";\n"
+  | V_Decl(t, id, ex) -> string_of_typ t ^ " " ^ id ^ string_of_expr ex ^ ";\n"
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^
   ")\n{\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^

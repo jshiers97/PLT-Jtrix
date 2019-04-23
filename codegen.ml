@@ -85,7 +85,7 @@ let translate (globals, functions) =
     let function_decl m fdecl =
       let name = fdecl.sfname
       and formal_types = 
-	Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.sformals)
+	Array.of_list (List.map (fun (V_Decl(t,_,_)) -> ltype_of_typ t) fdecl.sformals)
       in let ftype = L.function_type (ltype_of_typ fdecl.styp) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
@@ -116,7 +116,7 @@ let translate (globals, functions) =
 	in StringMap.add n local_var m 
       in
 
-      let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals
+      let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.sformals
           (Array.to_list (L.params the_function)) in
       List.fold_left add_local formals fdecl.slocals 
     in
