@@ -10,6 +10,7 @@ open Ast
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL
+%token <char> CHARLITERAL
 %token EOF
 
 %start program
@@ -89,6 +90,7 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
+  | CHARLITERAL	     { CharLit($1)            }
   | ID               { Id($1)                 }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
