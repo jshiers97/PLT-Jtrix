@@ -8,6 +8,10 @@ and sx =
   | SFliteral of string
   | SBoolLit of bool
   | SStrLit of string
+  | SIntArrLit of int list
+  | SFltArrLit of float list
+  | SArrGe of string * int
+  | SArrSe of string * int * sexpr
   | SId of string
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
@@ -36,12 +40,19 @@ type sprogram = bind list * sfunc_decl list
 (* Pretty-printing functions *)
 
 let rec string_of_sexpr (t, e) =
-  "(" ^ string_of_typ t ^ " : " ^ (match e with
-    SLiteral(l) -> string_of_int l
+  "{" ^ string_of_typ t ^ " : " ^ (match e with
+  | SLiteral(l) -> string_of_int l
   | SBoolLit(true) -> "true"
   | SBoolLit(false) -> "false"
   | SFliteral(l) -> l
   | SStrLit(l) -> l
+  (*| SArrLit(s, l) -> let str_arr =
+          match l with
+          | IL a -> List.map string_of_int a
+          | FL a -> List.map string_of_float a in
+          "[" ^ (String.concat ", " str_arr) ^ "]" *) 
+  | SArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
+  | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_sexpr e)
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2

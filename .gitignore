@@ -1,2 +1,3 @@
 *.o
-tilted.mc
+*.mc
+*.ll
