@@ -53,8 +53,8 @@ rule token = parse
 | '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ']* '"' as str { STRINGLITERAL(str) }
 | '[' (sp (digits ',' sp)* (digits)? sp as int_arr) ']'  {  INTARRLIT(list_of_string int_of_string int_arr) } 
 | '[' (sp (flt ',' sp)* (flt)? sp as flt_arr) ']'  { FLTARRLIT(list_of_string float_of_string flt_arr) } 
-| "int[]"  { ARR("int") }
-| "float[]" { ARR("float") }
+| "int[]"  { INTARR }
+| "float[]" { FLTARR }
 | digits as lxm { LITERAL(int_of_string lxm) }
 | flt  as lxm { FLIT(lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*     as lxm { ID(lxm) }

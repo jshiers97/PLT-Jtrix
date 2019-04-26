@@ -8,7 +8,8 @@ and sx =
   | SFliteral of string
   | SBoolLit of bool
   | SStrLit of string
-  | SArrLit of string * num_list
+  | SIntArrLit of int list
+  | SFltArrLit of float list
   | SArrGe of string * int
   | SArrSe of string * int * sexpr
   | SId of string
@@ -45,11 +46,11 @@ let rec string_of_sexpr (t, e) =
   | SBoolLit(false) -> "false"
   | SFliteral(l) -> l
   | SStrLit(l) -> l
-  | SArrLit(s, l) -> let str_arr =
+  (*| SArrLit(s, l) -> let str_arr =
           match l with
           | IL a -> List.map string_of_int a
           | FL a -> List.map string_of_float a in
-          "[" ^ (String.concat ", " str_arr) ^ "]" 
+          "[" ^ (String.concat ", " str_arr) ^ "]" *) 
   | SArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
   | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_sexpr e)
   | SId(s) -> s

@@ -43,8 +43,8 @@ let check (globals, functions) =
 			                         ("printf", Float);
                                                  ("printbig", Int);
                                                  ("println", String);
-                                                 ("printarr", Arr ("int"));
-                                                 ("printfltarr", Arr ("float"))  ]
+                                                 ("printarr", IntArr);
+                                                 ("printfltarr", FltArr)  ]
   in
 
   (* Add function name to symbol table *)
@@ -99,21 +99,18 @@ let check (globals, functions) =
       | Fliteral l -> (Float, SFliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | StrLit l   -> (String, SStrLit l)
-      | ArrLit (s, l)   ->
-          let x = match s with
-          | "int" -> (Arr("int"), SArrLit (s, l))
-          | "float" -> (Arr("float"), SArrLit (s, l)) in
-          x;
+      | IntArrLit (l) -> (IntArr, SIntArrLit(l))
+      | FltArrLit (l) -> (FltArr, SFltArrLit(l))
       | ArrGe (v, i) -> 
           let ele_typ = match (type_of_identifier v) with
-          | Arr ("int") -> Int
-          | Arr ("float") -> Float 
+          | IntArr -> Int
+          | FltArr -> Float 
           | _ -> raise (Failure "Variable is not an array") in
           (ele_typ, SArrGe(v, i))
       | ArrSe (v, i, e) ->
           let ele_type_arr = match (type_of_identifier v) with
-          | Arr ("int") -> Int
-          | Arr ("float") -> Float
+          | IntArr -> Int
+          | FltArr -> Float
           | _ -> raise (Failure "Variable is not an array") in
           if (ele_type_arr = (fst (expr e))) then 
                 (ele_type_arr, SArrSe(v, i, (expr e)))

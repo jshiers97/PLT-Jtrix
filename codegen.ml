@@ -44,10 +44,8 @@ let translate (globals, functions) =
     | A.Float -> float_t
     | A.Void  -> void_t
     | A.String -> string_t
-    | A.Arr e   ->
-        match e with
-        | "int" -> int_arr_t
-        | "float" -> float_arr_t
+    | A.IntArr -> int_arr_t
+    | A.FltArr -> float_arr_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -134,46 +132,35 @@ let translate (globals, functions) =
       | SFliteral l -> L.const_float_of_string float_t l
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
                        L.build_global_stringptr str_wo_qt str_wo_qt  builder
-      | SArrGe (v, i) -> let t = Array.of_list [(L.const_int i32_t (i+2))] in
+      | SArrGe (v, i) -> let t = Array.of_list [(L.const_int i32_t (i+1))] in
                          let arr = L.build_load (lookup v) ""  builder in
                          let ptr = L.build_gep arr t "" builder in
                          L.build_load ptr "" builder
-      | SArrSe(v, i, (ty, e)) -> let t = Array.of_list [(L.const_int i32_t (i+2))] in
+      | SArrSe(v, i, (ty, e)) -> let t = Array.of_list [(L.const_int i32_t (i+1))] in
                            let arr = L.build_load (lookup v) "" builder in
                            let ptr = L.build_gep arr t "" builder in
                            let typ_e = expr builder (ty, e) in
                            L.build_store (typ_e)  ptr builder
-      | SArrLit (t, a) -> 
-          let typ = match a with
-                | IL l -> let s = L.build_array_alloca i32_t (L.const_int i32_t ((List.length l)+2)) "" builder in 
+      | SIntArrLit (a) -> let s = L.build_array_alloca i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                           let t = Array.of_list [(L.const_int i32_t 0)] in
                           let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_int i32_t 32) ptr builder)
-                          ;
-                          let t = Array.of_list [(L.const_int i32_t 1)] in
-                          let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_int i32_t (List.length l)) ptr builder);
-                          for i = 2 to ((List.length l)+1) do
-                          let t = Array.of_list  [(L.const_int i32_t i)] in
-                          let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_int i32_t (List.nth l (i-2))) ptr builder)
+                          ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);
+                          for i = 1 to ((List.length a)) do
+                                let t = Array.of_list [(L.const_int i32_t i)] in
+                                let ptr = L.build_gep s t "" builder in
+                                ignore(L.build_store (L.const_int i32_t (List.nth a (i - 1))) ptr builder)
                           done;
                           s
-                | FL l ->  let s = L.build_array_alloca float_t (L.const_int i32_t ((List.length l)+2)) "" builder in
+      | SFltArrLit (a) -> let s = L.build_array_alloca float_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                           let t = Array.of_list [(L.const_int i32_t 0)] in
                           let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_float float_t 64.) ptr builder);
-                          let t = Array.of_list [(L.const_int i32_t 1)] in
-                          let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_float float_t (float_of_int (List.length l))) ptr builder);
-                          for i = 2 to ((List.length l)+1) do
+                          ignore(L.build_store (L.const_float float_t (float_of_int (List.length a))) ptr builder);
+                          for i = 1 to ((List.length a)) do
                           let t = Array.of_list  [(L.const_int i32_t i)] in
                           let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_float float_t (List.nth l (i-2))) ptr builder)
+                          ignore(L.build_store (L.const_float float_t (List.nth a (i-1))) ptr builder)
                           done;
                           s
-          in
-          typ
       | SNoexpr     -> L.const_int i32_t 0
       | SId s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in
@@ -228,15 +215,12 @@ let translate (globals, functions) =
 	    "printf" builder
       | SCall ("println", [e]) ->
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
-      | SCall ("printarr", [e]) ->
+      (*| SCall ("printarr", [e]) ->
           let print = match (snd e) with
-                | SArrLit (t, a) -> let b = match a with
-                    | IL l -> L.build_call printarr_func [| (L.const_int i32_t (List.length l)); (expr builder e) |] "printarr" builder 
-                    | FL l -> L.build_call printarr_func [| (L.const_int i32_t (List.length l)); (expr builder e) |] "printfltarr" builder in
-                b;
-
+                | SIntArrLit (a) -> L.build_call printarr_func [| (L.const_int i32_t (List.length l)); (expr builder e) |] "printarr" builder 
+                | SFltArrLit (a)  -> L.build_call printarr_func [| (L.const_int i32_t (List.length l)); (expr builder e) |] "printfltarr" builder in
                 | _ -> raise (Failure "not an array") in
-          print;
+          print;*)
       | SCall (f, args) ->             
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in

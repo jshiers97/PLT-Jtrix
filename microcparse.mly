@@ -11,7 +11,7 @@ open Ast
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING
 %token <int> LITERAL
 %token <bool> BLIT
-%token <string> ID FLIT STRINGLITERAL ARR
+%token <string> ID FLIT STRINGLITERAL 
 %token <int list> INTARRLIT
 %token <float list> FLTARRLIT
 %token <string * int> ARRGE
@@ -63,7 +63,8 @@ typ:
   | FLOAT { Float }
   | VOID  { Void  }
   | STRING { String }
-  | ARR { Arr($1) }
+  | INTARR { IntArr }
+  | FLTARR { FltArr }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -95,8 +96,8 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
-  | INTARRLIT        { ArrLit("int", IL($1))  }
-  | FLTARRLIT        { ArrLit("float", FL($1)) }
+  | INTARRLIT        { IntArrLit($1)          }
+  | FLTARRLIT        { FltArrLit($1)          }
   | ID               { Id($1)                 }
   | ARRGE            { ArrGe(fst $1, snd $1)  }
   | ARRGE ASSIGN expr { ArrSe(fst $1, snd $1, $3) }
