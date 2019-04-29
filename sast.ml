@@ -13,6 +13,8 @@ and sx =
   | SArrGe of string * int
   | SArrSe of string * int * sexpr
   | SId of string
+  (*creating SChar_lit*)
+  | SChar_lit of char
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
   | SAssign of string * sexpr
@@ -43,7 +45,8 @@ let rec string_of_sexpr (t, e) =
   "{" ^ string_of_typ t ^ " : " ^ (match e with
   | SLiteral(l) -> string_of_int l
   | SBoolLit(true) -> "true"
-  | SBoolLit(false) -> "false"
+  | SBoolLit(false) -> "false" 
+  | SChar_lit(l) -> l
   | SFliteral(l) -> l
   | SStrLit(l) -> l
   (*| SArrLit(s, l) -> let str_arr =

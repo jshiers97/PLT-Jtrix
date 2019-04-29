@@ -59,6 +59,8 @@ rule token = parse
 | flt  as lxm { FLIT(lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*     as lxm { ID(lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var '[' (digits as ind) ']' { ARRGE(var, int_of_string ind)  } 
+(*trying to do char literals *)
+| ['a'-'z' 'A'-'Z'] as lit {CHAR_LIT(lit) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 

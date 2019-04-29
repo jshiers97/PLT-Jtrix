@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void | String | IntArr | FltArr
+type typ = Int | Bool | Float | Void | String | IntArr | FltArr | Char
 
 type bind = typ * string
 
@@ -19,6 +19,7 @@ type expr =
   | ArrGe of string * int
   | ArrSe of string * int * expr
   | Id of string
+  | Char_lit of char
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
@@ -69,6 +70,7 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | StrLit(l) -> l
+  | Char_lit(l) -> l
   | IntArrLit(l) -> "int"
   | FltArrLit(l) -> "flt" 
   | ArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"

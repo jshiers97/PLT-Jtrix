@@ -98,6 +98,7 @@ let check (globals, functions) =
         Literal  l -> (Int, SLiteral l)
       | Fliteral l -> (Float, SFliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
+      | Char_lit l -> (Char, SChar_lit l)
       | StrLit l   -> (String, SStrLit l)
       | IntArrLit (l) -> (IntArr, SIntArrLit(l))
       | FltArrLit (l) -> (FltArr, SFltArrLit(l))

@@ -41,6 +41,8 @@ let translate (globals, functions) =
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
+    (* added chars to this *) 
+    | A.Char  -> i8_t
     | A.Float -> float_t
     | A.Void  -> void_t
     | A.String -> string_t
