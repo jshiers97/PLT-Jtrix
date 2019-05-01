@@ -7,7 +7,7 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
-%token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR
+%token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING
 %token <int> LITERAL
 %token <bool> BLIT
@@ -15,6 +15,7 @@ open Ast
 %token <int list> INTARRLIT
 %token <float list> FLTARRLIT
 %token <string * int> ARRGE
+%token <int list list> INTMATRIXLIT
 %token EOF
 
 %start program
@@ -98,6 +99,7 @@ expr:
   | STRINGLITERAL    { StrLit($1)             }
   | INTARRLIT        { IntArrLit($1)          }
   | FLTARRLIT        { FltArrLit($1)          }
+  | INTMATRIXLIT     { IntMatLit($1)          }
   | ID               { Id($1)                 }
   | ARRGE            { ArrGe(fst $1, snd $1)  }
   | ARRGE ASSIGN expr { ArrSe(fst $1, snd $1, $3) }

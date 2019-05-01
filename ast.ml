@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void | String | IntArr | FltArr
+type typ = Int | Bool | Float | Void | String | IntArr | FltArr | IntMat
 
 type bind = typ * string
 
@@ -14,6 +14,8 @@ type expr =
   | Fliteral of string
   | BoolLit of bool
   | StrLit of string
+  | IntMatLit of (int list) list
+  | FltMatLit of (float list) list
   | IntArrLit of int list
   | FltArrLit of float list
   | ArrGe of string * int

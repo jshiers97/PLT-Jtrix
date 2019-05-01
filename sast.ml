@@ -8,6 +8,8 @@ and sx =
   | SFliteral of string
   | SBoolLit of bool
   | SStrLit of string
+  | SIntMatLit of (int list) list
+  | SFltMatLit of (float list) list
   | SIntArrLit of int list
   | SFltArrLit of float list
   | SArrGe of string * int

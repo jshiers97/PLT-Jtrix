@@ -35,7 +35,10 @@ let translate (globals, functions) =
   in
   let string_t   = L.pointer_type (i8_t) 
   and int_arr_t  = L.pointer_type (i32_t)
-  and float_arr_t = L.pointer_type (float_t) in
+  and float_arr_t = L.pointer_type (float_t)
+  in
+  let int_mat_t = L.pointer_type int_arr_t
+  in
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -46,6 +49,7 @@ let translate (globals, functions) =
     | A.String -> string_t
     | A.IntArr -> int_arr_t
     | A.FltArr -> float_arr_t
+    | A.IntMat -> int_mat_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -125,6 +129,32 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
+    (* Creates int array *)
+    let create_int_arr s l =
+        let t = Array.of_list [(L.const_int i32_t 0)] in
+        let ptr = L.build_gep s t "" builder in
+        ignore(L.build_store (L.const_int i32_t (List.length l)) ptr builder);
+        for i = 1 to ((List.length l)) do
+            let t = Array.of_list [(L.const_int i32_t i)] in
+            let ptr = L.build_gep s t "" builder in
+            ignore(L.build_store (L.const_int i32_t (List.nth l (i - 1))) ptr builder)
+        done;
+        s
+    in
+
+    (* Creates float array *)
+    let create_flt_arr s l =
+        let t = Array.of_list [(L.const_int i32_t 0)] in
+        let ptr = L.build_gep s t "" builder in
+        ignore(L.build_store (L.const_float float_t (float_of_int (List.length l))) ptr builder);
+        for i = 1 to ((List.length l)) do
+            let t = Array.of_list  [(L.const_int i32_t i)] in
+            let ptr = L.build_gep s t "" builder in
+            ignore(L.build_store (L.const_float float_t (List.nth l (i-1))) ptr builder)
+         done;
+         s
+    in
+
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) = match e with
 	SLiteral i  -> L.const_int i32_t i
@@ -142,25 +172,17 @@ let translate (globals, functions) =
                            let typ_e = expr builder (ty, e) in
                            L.build_store (typ_e)  ptr builder
       | SIntArrLit (a) -> let s = L.build_array_alloca i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
-                          let t = Array.of_list [(L.const_int i32_t 0)] in
-                          let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);
-                          for i = 1 to ((List.length a)) do
-                                let t = Array.of_list [(L.const_int i32_t i)] in
-                                let ptr = L.build_gep s t "" builder in
-                                ignore(L.build_store (L.const_int i32_t (List.nth a (i - 1))) ptr builder)
+                          create_int_arr s a
+      | SIntMatLit (a) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length a))) "" builder in
+                          for i = 0 to ((List.length a)-1) do
+                              let t = Array.of_list [(L.const_int i32_t i)] in
+                              let ptr = L.build_gep s t "" builder in
+                              let typ_e = expr builder (A.IntArr, SIntArrLit(List.nth a i)) in  
+                              ignore(L.build_store typ_e ptr builder)
                           done;
-                          s
+                          s     
       | SFltArrLit (a) -> let s = L.build_array_alloca float_t (L.const_int i32_t ((List.length a)+1)) "" builder in
-                          let t = Array.of_list [(L.const_int i32_t 0)] in
-                          let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_float float_t (float_of_int (List.length a))) ptr builder);
-                          for i = 1 to ((List.length a)) do
-                          let t = Array.of_list  [(L.const_int i32_t i)] in
-                          let ptr = L.build_gep s t "" builder in
-                          ignore(L.build_store (L.const_float float_t (List.nth a (i-1))) ptr builder)
-                          done;
-                          s
+                          create_flt_arr s a 
       | SNoexpr     -> L.const_int i32_t 0
       | SId s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in
