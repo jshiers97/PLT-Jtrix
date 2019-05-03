@@ -115,7 +115,20 @@ let check (globals, functions) =
           | _ -> raise (Failure "Variable is not an array") in
           if (ele_type_arr = (fst (expr e))) then 
                 (ele_type_arr, SArrSe(v, i, (expr e)))
-          else raise (Failure ("expected type " ^ (string_of_typ ele_type_arr) ^ " but received an expression of type " ^ string_of_typ (fst (expr e))))
+          else raise (Failure ("expected type " ^ (string_of_typ ele_type_arr)
+                 ^ " but received an expression of type " ^ string_of_typ (fst (expr e))))
+      | MatGe (v, r, c) ->
+         let ele_typ = match (type_of_identifier v) with
+         | IntMat -> Int
+         | _ -> raise (Failure "Variable is not an matrix") in
+         (ele_typ, SMatGe(v, r, c))
+      | MatSe (v, r, c, e) ->
+         let ele_typ_mat = match (type_of_identifier v) with
+         | IntMat -> Int
+         | _ -> raise (Failure "Variable is not a matrix") in
+         if (ele_typ_mat = (fst (expr e))) then
+                 (ele_typ_mat, SMatSe(v, r, c, (expr e)))
+         else raise (Failure "riparoni")
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 

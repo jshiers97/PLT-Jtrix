@@ -162,6 +162,29 @@ let translate (globals, functions) =
       | SFliteral l -> L.const_float_of_string float_t l
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
                        L.build_global_stringptr str_wo_qt str_wo_qt  builder
+      | SMatGe (v, r, c) -> let row_num = Array.of_list [(L.const_int i32_t r)] in
+                            let col_num = Array.of_list [(L.const_int i32_t (c+1))] in
+                            let mat = L.build_load (lookup v) "" builder in
+                            let row_ptr = L.build_gep mat row_num "" builder in
+                            let row = L.build_load row_ptr "" builder in
+                            let col_ptr = L.build_gep row col_num "" builder in
+                            L.build_load col_ptr "" builder
+      | SMatSe (v, r, c, (ty, e)) -> let row_num = Array.of_list [(L.const_int i32_t r)] in
+                            let col_num = Array.of_list [(L.const_int i32_t (c+1))] in
+                            let mat = L.build_load (lookup v) "" builder in
+                            let row_ptr = L.build_gep mat row_num "" builder in
+                            let row = L.build_load row_ptr "" builder in
+                            let col_ptr = L.build_gep row col_num "" builder in
+                            let typ_e = expr builder (ty, e) in
+                            L.build_store (typ_e) col_ptr builder
+      | SIntMatLit (a) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length a))) "" builder in
+                          for i = 0 to ((List.length a)-1) do
+                              let t = Array.of_list [(L.const_int i32_t i)] in
+                              let ptr = L.build_gep s t "" builder in
+                              let typ_e = expr builder (A.IntArr, SIntArrLit(List.nth a i)) in  
+                              ignore(L.build_store typ_e ptr builder)
+                          done;
+                          s     
       | SArrGe (v, i) -> let t = Array.of_list [(L.const_int i32_t (i+1))] in
                          let arr = L.build_load (lookup v) ""  builder in
                          let ptr = L.build_gep arr t "" builder in
@@ -173,14 +196,6 @@ let translate (globals, functions) =
                            L.build_store (typ_e)  ptr builder
       | SIntArrLit (a) -> let s = L.build_array_alloca i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                           create_int_arr s a
-      | SIntMatLit (a) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length a))) "" builder in
-                          for i = 0 to ((List.length a)-1) do
-                              let t = Array.of_list [(L.const_int i32_t i)] in
-                              let ptr = L.build_gep s t "" builder in
-                              let typ_e = expr builder (A.IntArr, SIntArrLit(List.nth a i)) in  
-                              ignore(L.build_store typ_e ptr builder)
-                          done;
-                          s     
       | SFltArrLit (a) -> let s = L.build_array_alloca float_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                           create_flt_arr s a 
       | SNoexpr     -> L.const_int i32_t 0

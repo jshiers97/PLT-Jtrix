@@ -15,6 +15,7 @@ open Ast
 %token <int list> INTARRLIT
 %token <float list> FLTARRLIT
 %token <string * int> ARRGE
+%token <string * (int * int)> MATGE
 %token <int list list> INTMATRIXLIT
 %token EOF
 
@@ -66,6 +67,7 @@ typ:
   | STRING { String }
   | INTARR { IntArr }
   | FLTARR { FltArr }
+  | INTMATRIX { IntMat }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -101,6 +103,8 @@ expr:
   | FLTARRLIT        { FltArrLit($1)          }
   | INTMATRIXLIT     { IntMatLit($1)          }
   | ID               { Id($1)                 }
+  | MATGE            { MatGe(fst $1, fst (snd $1), snd (snd $1)) }
+  | MATGE ASSIGN expr { MatSe(fst $1, fst (snd $1), snd (snd $1), $3) }
   | ARRGE            { ArrGe(fst $1, snd $1)  }
   | ARRGE ASSIGN expr { ArrSe(fst $1, snd $1, $3) }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
