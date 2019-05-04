@@ -65,6 +65,7 @@ rule token = parse
 | "int[]"  { INTARR }
 | "float[]" { FLTARR }   
 | '[' ((sp '[' sp (digits ',' sp)* (digits)? sp ']' ';')* (sp '[' sp (digits ',' sp)* (digits)? sp ']')? as mat)  ']' { INTMATRIXLIT(matrix_of_string int_of_string mat) }
+| '[' ((sp '[' sp (flt ',' sp)* (flt)? sp ']' ';' )* (sp '[' sp (flt ',' sp)* (flt)? sp ']')? as mat) ']' { FLTMATRIXLIT(matrix_of_string float_of_string mat) }
 | "Matrix<int>" { INTMATRIX }
 | "Matrix<float>" { FLTMATRIX }
 | "new" { NEW }

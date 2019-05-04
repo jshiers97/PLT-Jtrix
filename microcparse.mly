@@ -17,6 +17,7 @@ open Ast
 %token <string * int> ARRGE
 %token <string * (int * int)> MATGE
 %token <int list list> INTMATRIXLIT
+%token <float list list> FLTMATRIXLIT
 %token EOF
 
 %start program
@@ -68,6 +69,7 @@ typ:
   | INTARR { IntArr }
   | FLTARR { FltArr }
   | INTMATRIX { IntMat }
+  | FLTMATRIX { FltMat }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -102,6 +104,7 @@ expr:
   | INTARRLIT        { IntArrLit($1)          }
   | FLTARRLIT        { FltArrLit($1)          }
   | INTMATRIXLIT     { IntMatLit($1)          }
+  | FLTMATRIXLIT     { FltMatLit($1)          }
   | ID               { Id($1)                 }
   | MATGE            { MatGe(fst $1, fst (snd $1), snd (snd $1)) }
   | MATGE ASSIGN expr { MatSe(fst $1, fst (snd $1), snd (snd $1), $3) }

@@ -38,6 +38,7 @@ let translate (globals, functions) =
   and float_arr_t = L.pointer_type (float_t)
   in
   let int_mat_t = L.pointer_type int_arr_t
+  and float_mat_t = L.pointer_type float_arr_t
   in
 
   (* Return the LLVM type for a MicroC type *)
@@ -50,6 +51,7 @@ let translate (globals, functions) =
     | A.IntArr -> int_arr_t
     | A.FltArr -> float_arr_t
     | A.IntMat -> int_mat_t
+    | A.FltMat -> float_mat_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -185,6 +187,14 @@ let translate (globals, functions) =
                               ignore(L.build_store typ_e ptr builder)
                           done;
                           s     
+      | SFltMatLit (a) -> let s = L.build_array_alloca float_arr_t (L.const_int i32_t ((List.length a))) "" builder in
+                          for i = 0 to ((List.length a)-1) do
+                              let t = Array.of_list [(L.const_int i32_t i)] in
+                              let ptr = L.build_gep s t "" builder in
+                              let typ_e = expr builder (A.FltArr, SFltArrLit(List.nth a i)) in
+                              ignore(L.build_store typ_e ptr builder)
+                          done;
+                          s
       | SArrGe (v, i) -> let t = Array.of_list [(L.const_int i32_t (i+1))] in
                          let arr = L.build_load (lookup v) ""  builder in
                          let ptr = L.build_gep arr t "" builder in

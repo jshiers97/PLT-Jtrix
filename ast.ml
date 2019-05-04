@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void | String | IntArr | FltArr | IntMat
+type typ = Int | Bool | Float | Void | String | IntArr | FltArr | IntMat | FltMat
 
 type bind = typ * string
 
@@ -75,7 +75,8 @@ let rec string_of_expr = function
   | StrLit(l) -> l
   | IntArrLit(l) -> "int"
   | FltArrLit(l) -> "flt" 
-  | IntMatLit(l) -> "intamt"
+  | IntMatLit(m) -> "intamt"
+  | FltMatLit(m) -> "m"
   | ArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
   | ArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_expr e)
   | MatGe(v, r, c) -> v ^ "[" ^ (string_of_int r) ^ "][" ^ (string_of_int c) ^ "]"
@@ -111,6 +112,7 @@ let string_of_typ = function
   | IntArr -> "intarr"
   | FltArr -> "fltarr"
   | IntMat -> "intmat"
+  | FltMat -> "fltmat"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

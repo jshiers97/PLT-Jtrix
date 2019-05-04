@@ -93,13 +93,25 @@ let check (globals, functions) =
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
 
+    let check_mat_size m =
+            let compare_size a b = (List.length a) = (List.length b) in
+            let new_list = List.map (compare_size (List.hd m)) m in
+            for i = 0 to ((List.length new_list) - 1) do
+                    if not (List.nth new_list i) then
+                            raise (Failure "matrices must have the same number of columns in each row")
+                    done;
+    in
+
     (* Return a semantically-checked expression, i.e., with a type *)
     let rec expr = function
         Literal  l -> (Int, SLiteral l)
       | Fliteral l -> (Float, SFliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | StrLit l   -> (String, SStrLit l)
-      | IntMatLit (l) -> (IntMat, SIntMatLit(l))
+      | IntMatLit (m) -> check_mat_size m; 
+                         (IntMat, SIntMatLit(m))
+      | FltMatLit (m) -> check_mat_size m;
+                         (FltMat, SFltMatLit(m))
       | IntArrLit (l) -> (IntArr, SIntArrLit(l))
       | FltArrLit (l) -> (FltArr, SFltArrLit(l))
       | ArrGe (v, i) -> 
@@ -120,11 +132,13 @@ let check (globals, functions) =
       | MatGe (v, r, c) ->
          let ele_typ = match (type_of_identifier v) with
          | IntMat -> Int
+         | FltMat -> Float
          | _ -> raise (Failure "Variable is not an matrix") in
          (ele_typ, SMatGe(v, r, c))
       | MatSe (v, r, c, e) ->
          let ele_typ_mat = match (type_of_identifier v) with
          | IntMat -> Int
+         | FltMat -> Float
          | _ -> raise (Failure "Variable is not a matrix") in
          if (ele_typ_mat = (fst (expr e))) then
                  (ele_typ_mat, SMatSe(v, r, c, (expr e)))
