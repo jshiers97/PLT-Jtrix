@@ -10,8 +10,8 @@ and sx =
   | SStrLit of string
   | SIntMatLit of (int list) list
   | SFltMatLit of (float list) list
-  | SIntArrLit of int list
-  | SFltArrLit of float list
+  | SIntArrLit of sexpr list
+  | SFltArrLit of sexpr list
   | SArrGe of string * int
   | SArrSe of string * int * sexpr
   | SMatGe of string * int * int

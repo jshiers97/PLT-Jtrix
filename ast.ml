@@ -16,8 +16,8 @@ type expr =
   | StrLit of string
   | IntMatLit of (int list) list
   | FltMatLit of (float list) list
-  | IntArrLit of int list
-  | FltArrLit of float list
+  | IntArrLit of expr list
+  | FltArrLit of expr list
   | ArrGe of string * int
   | ArrSe of string * int * expr
   | MatGe of string * int * int

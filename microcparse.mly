@@ -8,16 +8,10 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL 
-%token <int list> INTARRLIT
-%token <float list> FLTARRLIT
-%token <string * int> ARRGE
-%token <string * (int * int)> MATGE
-%token <int list list> INTMATRIXLIT
-%token <float list list> FLTMATRIXLIT
 %token EOF
 
 %start program
@@ -101,15 +95,26 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
-  | INTARRLIT        { IntArrLit($1)          }
-  | FLTARRLIT        { FltArrLit($1)          }
-  | INTMATRIXLIT     { IntMatLit($1)          }
-  | FLTMATRIXLIT     { FltMatLit($1)          }
+  | LBRACK arr_opt  RBRACK { print_endline "Hello!";
+                         let rec check_type e = match e with
+                         | Literal _ -> "int"
+                         | Fliteral _ -> "float"
+                         | Binop (x, Add, _) -> check_type x
+                         | Binop (x, Sub, _) -> check_type x
+                         | Binop (x, Mult, _) -> check_type x
+                         | Binop (x, Div, _) -> check_type x
+                         | Unop (Neg, x) -> check_type x
+                         | _ -> "Expected int or float expressions"
+                         in
+                         if (List.length $2) > 0 then
+                         (match (check_type (List.hd $2)) with
+                         | "int" -> IntArrLit($2)
+                         | "float" -> FltArrLit($2)
+                         | x -> raise (Failure x)
+                         )
+                         else raise (Failure "Array must not be empty")
+  } 
   | ID               { Id($1)                 }
-  | MATGE            { MatGe(fst $1, fst (snd $1), snd (snd $1)) }
-  | MATGE ASSIGN expr { MatSe(fst $1, fst (snd $1), snd (snd $1), $3) }
-  | ARRGE            { ArrGe(fst $1, snd $1)  }
-  | ARRGE ASSIGN expr { ArrSe(fst $1, snd $1, $3) }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
   | expr TIMES  expr { Binop($1, Mult,  $3)   }
@@ -135,3 +140,11 @@ args_opt:
 args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
+
+arr_opt:
+    /* nothing */  { []       }
+  | arr_list { List.rev $1 }
+
+arr_list:
+    expr { [$1] }
+  | arr_list COMMA expr { $3 :: $1 }

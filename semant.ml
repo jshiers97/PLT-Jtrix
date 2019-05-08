@@ -112,8 +112,20 @@ let check (globals, functions) =
                          (IntMat, SIntMatLit(m))
       | FltMatLit (m) -> check_mat_size m;
                          (FltMat, SFltMatLit(m))
-      | IntArrLit (l) -> (IntArr, SIntArrLit(l))
-      | FltArrLit (l) -> (FltArr, SFltArrLit(l))
+      | IntArrLit (l) -> let check_types a = match (expr a) with
+                         | (Int, _) -> ""
+                         | _ -> raise (Failure "Inconsistent types in array")
+                         in
+                         List.map check_types l;
+                         let sem_ele = List.map expr l in
+                         (IntArr, SIntArrLit(sem_ele))
+      | FltArrLit (l) -> let check_types a = match (expr a) with
+                         | (Float, _) -> ""
+                         | _ -> raise (Failure "Inconsistent types in array")
+                         in
+                         List.map check_types l;
+                         let sem_ele = List.map expr l in
+                         (FltArr, SFltArrLit(sem_ele))
       | ArrGe (v, i) -> 
           let ele_typ = match (type_of_identifier v) with
           | IntArr -> Int

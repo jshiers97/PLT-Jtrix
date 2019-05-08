@@ -31,6 +31,8 @@ rule token = parse
 | ')'      { RPAREN }
 | '{'      { LBRACE }
 | '}'      { RBRACE }
+| '['      { LBRACK }
+| ']'      { RBRACK }
 | ';'      { SEMI }
 | ','      { COMMA }
 | '+'      { PLUS }
@@ -60,20 +62,14 @@ rule token = parse
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
 | '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ']* '"' as str { STRINGLITERAL(str) }
-| '[' (sp (digits ',' sp)* (digits)? sp as int_arr) ']'  {  INTARRLIT(list_of_string int_of_string int_arr) } 
-| '[' (sp (flt ',' sp)* (flt)? sp as flt_arr) ']'  { FLTARRLIT(list_of_string float_of_string flt_arr) } 
 | "int[]"  { INTARR }
 | "float[]" { FLTARR }   
-| '[' ((sp '[' sp (digits ',' sp)* (digits)? sp ']' ';')* (sp '[' sp (digits ',' sp)* (digits)? sp ']')? as mat)  ']' { INTMATRIXLIT(matrix_of_string int_of_string mat) }
-| '[' ((sp '[' sp (flt ',' sp)* (flt)? sp ']' ';' )* (sp '[' sp (flt ',' sp)* (flt)? sp ']')? as mat) ']' { FLTMATRIXLIT(matrix_of_string float_of_string mat) }
 | "Matrix<int>" { INTMATRIX }
 | "Matrix<float>" { FLTMATRIX }
 | "new" { NEW }
 | digits as lxm { LITERAL(int_of_string lxm) }
 | flt  as lxm { FLIT(lxm) }
 | var  as lxm { ID(lxm) }
-| var  as var '[' (digits as ind) ']' { ARRGE(var, int_of_string ind)  } 
-| var as var '[' (digits as row) ']' '[' (digits as col) ']' { MATGE(var, (int_of_string row, int_of_string col)) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
