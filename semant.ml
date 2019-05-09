@@ -108,53 +108,76 @@ let check (globals, functions) =
       | Fliteral l -> (Float, SFliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | StrLit l   -> (String, SStrLit l)
-      | IntMatLit (m) -> check_mat_size m; 
-                         (IntMat, SIntMatLit(m))
-      | FltMatLit (m) -> check_mat_size m;
-                         (FltMat, SFltMatLit(m))
-      | IntArrLit (l) -> let check_types a = match (expr a) with
-                         | (Int, _) -> ""
-                         | _ -> raise (Failure "Inconsistent types in array")
-                         in
-                         List.map check_types l;
-                         let sem_ele = List.map expr l in
-                         (IntArr, SIntArrLit(sem_ele))
-      | FltArrLit (l) -> let check_types a = match (expr a) with
-                         | (Float, _) -> ""
-                         | _ -> raise (Failure "Inconsistent types in array")
-                         in
-                         List.map check_types l;
-                         let sem_ele = List.map expr l in
-                         (FltArr, SFltArrLit(sem_ele))
-      | ArrGe (v, i) -> 
+      | MatLit (m) -> let first_typ = fst (expr (List.hd m)) in
+                      let check_consistent a = match (fst (expr a)) with
+                      | first_typ -> ""
+                      | _ -> raise (Failure "Inconsistent types in matrix") in
+                      List.map check_consistent m;
+                      let sem_ele = List.map expr m in
+                      (match (first_typ) with
+                      | IntArr -> (IntMat, SIntMatLit(sem_ele))
+                      | FltArr -> (FltMat, SFltMatLit(sem_ele))
+                      | _ -> raise (Failure "Invalid type for matrix"))
+      | ArrLit (l) -> let first_typ = fst (expr (List.hd l)) in
+                      let check_consistent a = match (fst (expr a)) with
+                         | first_typ -> ""
+                         | _ -> raise (Failure "Inconsistent types in array") in
+                      List.map check_consistent l;
+                      let sem_ele = List.map expr l in
+                      (match (first_typ) with
+                      | Int -> (IntArr, SIntArrLit(sem_ele))
+                      | Float -> (FltArr, SFltArrLit(sem_ele))
+                      | _ -> raise (Failure "Invalid type for array"))
+      | ArrGe (v, e) -> 
           let ele_typ = match (type_of_identifier v) with
           | IntArr -> Int
           | FltArr -> Float 
           | _ -> raise (Failure "Variable is not an array") in
-          (ele_typ, SArrGe(v, i))
+          let ind_typ = match (expr e) with
+          | (Int, _) -> (expr e)
+          | _ -> raise (Failure "Index must be an integer") in
+          (ele_typ, SArrGe(v, ind_typ))
       | ArrSe (v, i, e) ->
           let ele_type_arr = match (type_of_identifier v) with
           | IntArr -> Int
           | FltArr -> Float
           | _ -> raise (Failure "Variable is not an array") in
-          if (ele_type_arr = (fst (expr e))) then 
-                (ele_type_arr, SArrSe(v, i, (expr e)))
-          else raise (Failure ("expected type " ^ (string_of_typ ele_type_arr)
+          let idx_type = match (expr i) with
+          | (Int, _) -> true
+          | _ -> false in
+          if(idx_type) then (
+                if (ele_type_arr = (fst (expr e))) then 
+                        (ele_type_arr, SArrSe(v, (expr i), (expr e)))
+                else raise (Failure ("expected type " ^ (string_of_typ ele_type_arr)
                  ^ " but received an expression of type " ^ string_of_typ (fst (expr e))))
+                )
+          else raise (Failure "Index must be an integer")
       | MatGe (v, r, c) ->
          let ele_typ = match (type_of_identifier v) with
          | IntMat -> Int
          | FltMat -> Float
          | _ -> raise (Failure "Variable is not an matrix") in
-         (ele_typ, SMatGe(v, r, c))
+         let idx_type = match (expr r), (expr c) with
+         | (Int, _), (Int, _) -> true
+         | _ -> false in
+         if(idx_type) then (
+         (ele_typ, SMatGe(v, (expr r), (expr c)))
+         )
+         else raise (Failure ("Index must be an integer"))
       | MatSe (v, r, c, e) ->
          let ele_typ_mat = match (type_of_identifier v) with
          | IntMat -> Int
          | FltMat -> Float
          | _ -> raise (Failure "Variable is not a matrix") in
+         let idx_type = match (expr r), (expr c) with
+         | (Int, _), (Int, _) -> true
+         | _ -> false in
+         if(idx_type) then (
          if (ele_typ_mat = (fst (expr e))) then
-                 (ele_typ_mat, SMatSe(v, r, c, (expr e)))
-         else raise (Failure "riparoni")
+                 (ele_typ_mat, SMatSe(v, (expr r), (expr c), (expr e)))
+         else raise (Failure "Expression is of wrong type")
+         )
+         else raise (Failure "Index must be an integer")
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 

@@ -151,15 +151,25 @@ let translate (globals, functions) =
       | SFliteral l -> L.const_float_of_string float_t l
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
                        L.build_global_stringptr str_wo_qt str_wo_qt  builder
-      | SMatGe (v, r, c) -> let row_num = Array.of_list [(L.const_int i32_t r)] in
-                            let col_num = Array.of_list [(L.const_int i32_t (c+1))] in
+      | SIntMatLit (m) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length m))) "" builder in
+                        (* let t = Array.of_list [(L.const_int i32_t 0)] in
+                         let ptr = L.build_gep s t "" builder in
+                         ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);*)
+                         for i = 1 to ((List.length m)) do
+                            let t = Array.of_list [L.const_int i32_t (i-1)] in
+                            let ptr = L.build_gep s t "" builder in
+                            ignore(L.build_store (expr builder (List.nth m (i - 1))) ptr builder)
+                         done;
+                         s 
+      | SMatGe (v, r, c) -> let row_num = Array.of_list [expr builder r] in
+                            let col_num = Array.of_list [(expr builder c)] in
                             let mat = L.build_load (lookup v) "" builder in
                             let row_ptr = L.build_gep mat row_num "" builder in
                             let row = L.build_load row_ptr "" builder in
                             let col_ptr = L.build_gep row col_num "" builder in
                             L.build_load col_ptr "" builder
-      | SMatSe (v, r, c, (ty, e)) -> let row_num = Array.of_list [(L.const_int i32_t r)] in
-                            let col_num = Array.of_list [(L.const_int i32_t (c+1))] in
+      | SMatSe (v, r, c, (ty, e)) -> let row_num = Array.of_list [(expr builder r)] in
+                            let col_num = Array.of_list [expr builder c] in
                             let mat = L.build_load (lookup v) "" builder in
                             let row_ptr = L.build_gep mat row_num "" builder in
                             let row = L.build_load row_ptr "" builder in
@@ -171,7 +181,7 @@ let translate (globals, functions) =
                          let ptr = L.build_gep s t "" builder in
                          ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);
                          for i = 1 to ((List.length a)) do
-                            let t = Array.of_list [L.const_int i32_t (i-1)] in
+                            let t = Array.of_list [L.const_int i32_t i] in
                             let ptr = L.build_gep s t "" builder in
                             ignore(L.build_store (expr builder (List.nth a (i - 1))) ptr builder)
                          done;
@@ -181,11 +191,21 @@ let translate (globals, functions) =
                          let ptr = L.build_gep s t "" builder in
                          ignore(L.build_store (L.const_float float_t (float_of_int (List.length a))) ptr builder);
                          for i = 1 to ((List.length a)) do
-                            let t = Array.of_list [L.const_int i32_t (i-1)] in
+                            let t = Array.of_list [L.const_int i32_t i] in
                             let ptr = L.build_gep s t "" builder in
                             ignore(L.build_store (expr builder (List.nth a (i - 1))) ptr builder)
                          done;
                          s
+      | SArrGe(v, e) -> let arr = L.build_load (lookup v) v builder in
+                        let idx = expr builder e  in
+                        let t = Array.of_list [idx] in
+                        let ptr = L.build_gep arr t "" builder in
+                        L.build_load ptr "" builder
+      | SArrSe(v, i, e) -> let arr = L.build_load (lookup v) v builder in
+                           let idx = (expr builder i) in
+                           let t = Array.of_list [idx] in
+                           let ptr = L.build_gep arr t "" builder in
+                           L.build_store (expr builder e) ptr builder
       | SNoexpr     -> L.const_int i32_t 0
       | SId s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in

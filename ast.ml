@@ -14,14 +14,12 @@ type expr =
   | Fliteral of string
   | BoolLit of bool
   | StrLit of string
-  | IntMatLit of (int list) list
-  | FltMatLit of (float list) list
-  | IntArrLit of expr list
-  | FltArrLit of expr list
-  | ArrGe of string * int
-  | ArrSe of string * int * expr
-  | MatGe of string * int * int
-  | MatSe of string * int * int * expr
+  | MatLit of expr list
+  | ArrLit of expr list
+  | ArrGe of string * expr
+  | ArrSe of string * expr * expr
+  | MatGe of string * expr * expr
+  | MatSe of string * expr * expr * expr
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -73,14 +71,13 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | StrLit(l) -> l
-  | IntArrLit(l) -> "int"
-  | FltArrLit(l) -> "flt" 
-  | IntMatLit(m) -> "intamt"
-  | FltMatLit(m) -> "m"
-  | ArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
-  | ArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_expr e)
-  | MatGe(v, r, c) -> v ^ "[" ^ (string_of_int r) ^ "][" ^ (string_of_int c) ^ "]"
-  | MatSe(v, r, c, e) ->   v ^ "[" ^ (string_of_int r) ^ "][" ^ (string_of_int c) ^ "] = " ^ (string_of_expr e)
+  | ArrLit(l) -> let str_l = List.map string_of_expr l in
+                 "[ " ^ String.concat ", " str_l ^ " ]"
+  | MatLit(l) -> "mat"
+  | ArrGe(v, e) -> v ^ "[" ^ (string_of_expr e) ^ "]"
+  | ArrSe(v, i, e) -> v ^ "[" ^ (string_of_expr i) ^ "] = " ^ (string_of_expr e)
+  | MatGe(v, r, c) -> v ^ "[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "]"
+  | MatSe(v, r, c, e) ->   v ^ "[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "] = " ^ (string_of_expr e)
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2

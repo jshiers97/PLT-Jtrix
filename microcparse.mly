@@ -4,6 +4,16 @@
 
 open Ast
 
+let rec check_type e = match e with
+                         | Literal _ -> "int"
+                         | Fliteral _ -> "float"
+                         | Binop (x, Add, _) -> check_type x
+                         | Binop (x, Sub, _) -> check_type x
+                         | Binop (x, Mult, _) -> check_type x
+                         | Binop (x, Div, _) -> check_type x
+                         | Unop (Neg, x) -> check_type x
+                         | _ -> "Expected int or float expressions"
+
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
@@ -95,25 +105,14 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
-  | LBRACK arr_opt  RBRACK { print_endline "Hello!";
-                         let rec check_type e = match e with
-                         | Literal _ -> "int"
-                         | Fliteral _ -> "float"
-                         | Binop (x, Add, _) -> check_type x
-                         | Binop (x, Sub, _) -> check_type x
-                         | Binop (x, Mult, _) -> check_type x
-                         | Binop (x, Div, _) -> check_type x
-                         | Unop (Neg, x) -> check_type x
-                         | _ -> "Expected int or float expressions"
-                         in
-                         if (List.length $2) > 0 then
-                         (match (check_type (List.hd $2)) with
-                         | "int" -> IntArrLit($2)
-                         | "float" -> FltArrLit($2)
-                         | x -> raise (Failure x)
-                         )
-                         else raise (Failure "Array must not be empty")
-  } 
+  | LBRACK arr_opt  RBRACK { ArrLit($2)       }
+  | ID LBRACK expr RBRACK {  ArrGe($1, $3)    } 
+  | ID LBRACK expr RBRACK ASSIGN expr { ArrSe($1, $3, $6) }
+  | LBRACK mat RBRACK { let mat_list = List.rev $2 in
+                        let arrlit a = ArrLit(a) in
+                        MatLit(List.map arrlit mat_list)   }
+  | ID LBRACK expr RBRACK LBRACK expr RBRACK { MatGe($1, $3, $6) }
+  | ID LBRACK expr RBRACK LBRACK expr RBRACK ASSIGN expr { MatSe($1, $3, $6, $9) }
   | ID               { Id($1)                 }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
@@ -148,3 +147,7 @@ arr_opt:
 arr_list:
     expr { [$1] }
   | arr_list COMMA expr { $3 :: $1 }
+
+mat:
+  | LBRACK arr_list RBRACK { [List.rev $2]  }
+  | mat SEMI LBRACK arr_list RBRACK { (List.rev $4) ::  $1 }
