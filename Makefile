@@ -7,7 +7,7 @@ test : all testall.sh
 # to test linking external code
 
 .PHONY : all
-all : jtrix.native printbig.o
+all : microc.native printbig.o
 
 # "make microc.native" compiles the compiler
 #
@@ -16,9 +16,9 @@ all : jtrix.native printbig.o
 #
 # See https://github.com/ocaml/ocamlbuild/blob/master/manual/manual.adoc
 
-jtrix.native :
+microc.native :
 	opam config exec -- \
-	ocamlbuild -use-ocamlfind jtrix.native
+	ocamlbuild -use-ocamlfind microc.native
 
 # "make clean" removes all generated files
 
@@ -53,7 +53,7 @@ TARFILES = ast.ml sast.ml codegen.ml Makefile _tags microc.ml microcparse.mly \
 	README scanner.mll semant.ml testall.sh \
 	printbig.c arcade-font.pbm font2c \
 	Dockerfile \
-	$(TESTFILES:%=tests/%) 
+	$(TESTFILES:%=tests/%)
 
 microc.tar.gz : $(TARFILES)
 	cd .. && tar czf microc/microc.tar.gz \
