@@ -1,6 +1,9 @@
 /* Ocamlyacc parser for MicroC */
 
 %{
+let frst (fir,_,_) = fir;;
+let scnd (_,sec,_) = sec;;
+let thrd (_,_,thi) = thi;; 
 
 open Ast
 
@@ -8,7 +11,7 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING STRUCT
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL 
@@ -37,9 +40,10 @@ program:
   decls EOF { $1 }
 
 decls:
-   /* nothing */ { ([], [])               }
- | decls vdecl { (($2 :: fst $1), snd $1) }
- | decls fdecl { (fst $1, ($2 :: snd $1)) }
+   /* nothing */ { ([], [], [] )          }
+ | decls vdecl { (($2 :: frst $1), scnd $1, thrd $1) }
+ | decls fdecl { (frst $1, ($2 :: scnd $1), thrd $1) }
+ | decls struct_decl { (frst $1, scnd $1, ($2 :: thrd $1)) } 
 
 fdecl:
    typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
@@ -63,6 +67,7 @@ typ:
   | FLOAT { Float }
   | VOID  { Void  }
   | STRING { String }
+  | STRUCT ID { StructId ($2) } 
   | INTARR { IntArr }
   | FLTARR { FltArr }
 
@@ -72,6 +77,13 @@ vdecl_list:
 
 vdecl:
    typ ID SEMI { ($1, $2) }
+
+/* struct declaration here because it uses vdecl */
+
+struct_decl:
+  STRUCT ID LBRACE vdecl_list RBRACE
+	{{ structname = $2; structelems = List.rev $4; }} 
+
 
 stmt_list:
     /* nothing */  { [] }

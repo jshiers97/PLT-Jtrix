@@ -46,6 +46,7 @@ rule token = parse
 | "int"    { INT }
 | "bool"   { BOOL }
 | "float"  { FLOAT }
+| "struct" { STRUCT } 
 | "void"   { VOID }
 | "string" { STRING }
 | "true"   { BLIT(true)  }
