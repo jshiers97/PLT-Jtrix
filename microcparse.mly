@@ -11,11 +11,10 @@ open Ast
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING
 %token <int> LITERAL
 %token <bool> BLIT
-%token <string> ID FLIT STRINGLITERAL 
+%token <string> ID FLIT STRINGLITERAL
 %token <int list> INTARRLIT
 %token <float list> FLTARRLIT
 %token <string * int> ARRGE
-(*Char Literal token added *)
 %token <char> CHARLITERAL
 %token EOF
 
@@ -67,7 +66,6 @@ typ:
   | STRING { String }
   | INTARR { IntArr }
   | FLTARR { FltArr }
-  (*addition of chars*)
   | CHAR  { Char }
 
 vdecl_list:
@@ -102,8 +100,7 @@ expr:
   | STRINGLITERAL    { StrLit($1)             }
   | INTARRLIT        { IntArrLit($1)          }
   | FLTARRLIT        { FltArrLit($1)          }
-  (* adding char literals to expressions*)
-  | CHARLITERAL         { CharLit($1)           }  
+  | CHARLITERAL         { CharLit($1)           }
   | ID               { Id($1)                 }
   | ARRGE            { ArrGe(fst $1, snd $1)  }
   | ARRGE ASSIGN expr { ArrSe(fst $1, snd $1, $3) }
