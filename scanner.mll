@@ -4,18 +4,6 @@
 
 open Microcparse
 
-let list_of_string f l = 
-        let sep_arr = List.map String.trim (String.split_on_char ',' l) in
-        List.map f sep_arr
-
-let remove_bracket s =
-        String.sub s 1 ((String.length s)-2)
-
-let matrix_of_string f l =
-        let sep_mat = List.map String.trim (String.split_on_char ';' l) in
-        let prop_mat = List.map remove_bracket sep_mat in
-        List.map (list_of_string f) prop_mat
-
 }
 
 let digit = ['0' - '9']
@@ -34,6 +22,7 @@ rule token = parse
 | '['      { LBRACK }
 | ']'      { RBRACK }
 | ';'      { SEMI }
+| '.'      { DOT }
 | ','      { COMMA }
 | '+'      { PLUS }
 | '-'      { MINUS }

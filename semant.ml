@@ -44,7 +44,7 @@ let check (globals, functions) =
                                                  ("printbig", Int);
                                                  ("println", String);
                                                  ("printarr", IntArr);
-                                                 ("printfltarr", FltArr)  ]
+                                                 ("printfltarr", FltArr); ]
   in
 
   (* Add function name to symbol table *)
@@ -93,15 +93,6 @@ let check (globals, functions) =
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
 
-    let check_mat_size m =
-            let compare_size a b = (List.length a) = (List.length b) in
-            let new_list = List.map (compare_size (List.hd m)) m in
-            for i = 0 to ((List.length new_list) - 1) do
-                    if not (List.nth new_list i) then
-                            raise (Failure "matrices must have the same number of columns in each row")
-                    done;
-    in
-
     (* Return a semantically-checked expression, i.e., with a type *)
     let rec expr = function
         Literal  l -> (Int, SLiteral l)
@@ -112,7 +103,7 @@ let check (globals, functions) =
                       let check_consistent a = match (fst (expr a)) with
                       | first_typ -> ""
                       | _ -> raise (Failure "Inconsistent types in matrix") in
-                      List.map check_consistent m;
+                      ignore(List.map check_consistent m);
                       let sem_ele = List.map expr m in
                       (match (first_typ) with
                       | IntArr -> (IntMat, SIntMatLit(sem_ele))
@@ -122,7 +113,7 @@ let check (globals, functions) =
                       let check_consistent a = match (fst (expr a)) with
                          | first_typ -> ""
                          | _ -> raise (Failure "Inconsistent types in array") in
-                      List.map check_consistent l;
+                      ignore(List.map check_consistent l);
                       let sem_ele = List.map expr l in
                       (match (first_typ) with
                       | Int -> (IntArr, SIntArrLit(sem_ele))
@@ -178,6 +169,53 @@ let check (globals, functions) =
          else raise (Failure "Expression is of wrong type")
          )
          else raise (Failure "Index must be an integer")
+      | StdLib (v, f, e) ->
+         let v' = expr v in
+         let check_exp v = match (fst v) with
+         | IntMat -> 1
+         | FltMat -> 2
+         | String -> 0
+         | _ -> raise (Failure "Type does not have any standard library functions") in
+         if((check_exp v') = 0) then
+                 (
+                       (Int, SLiteral(5)) 
+                 )
+         else  
+                let check_arg_num x a = 
+                        if ((List.length x) != a) then raise (Failure "Wrong number of arguments") in
+                let check_args e =
+                        if(fst (expr e) != Int) then raise (Failure "Argument must be an integer") in
+                let e' = List.map expr e in
+                (match f with
+                | "col" -> check_arg_num e 1;
+                ignore(List.iter check_args e);
+                ((match (fst v') with
+                  | IntMat -> IntArr
+                  | FltMat -> FltArr)
+                , SStdLib(v', f, e'));
+                | "row" -> check_arg_num e 1;
+                ignore(List.iter check_args e);
+                ((match (fst v') with
+                  | IntMat -> IntArr
+                  | FltMat -> FltArr),
+                SStdLib(v', f, e'));
+                | "spliceColumn" -> check_arg_num e 1;
+                ignore(List.iter check_args e);
+                (fst v', SStdLib(v', f, e'));
+                | "spliceRow" -> check_arg_num e 1;
+                ignore(List.iter check_args e);
+                (fst v', SStdLib(v', f, e'));
+                | "switchRows" -> check_arg_num e 2;
+                ignore(List.iter check_args e);
+                (fst v', SStdLib(v', f, e'));
+                | "transpose" -> check_arg_num e 0;
+                (fst v', SStdLib(v', f, e'));
+                | "dim" -> check_arg_num e 0;
+                ((match (fst v') with
+                  | IntMat -> IntArr
+                  | FltMat -> FltArr),
+                SStdLib(v', f, e'));
+                | _ -> raise (Failure "Invalid matrix operation"))
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 

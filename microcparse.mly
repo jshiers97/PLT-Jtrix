@@ -4,21 +4,11 @@
 
 open Ast
 
-let rec check_type e = match e with
-                         | Literal _ -> "int"
-                         | Fliteral _ -> "float"
-                         | Binop (x, Add, _) -> check_type x
-                         | Binop (x, Sub, _) -> check_type x
-                         | Binop (x, Mult, _) -> check_type x
-                         | Binop (x, Div, _) -> check_type x
-                         | Unop (Neg, x) -> check_type x
-                         | _ -> "Expected int or float expressions"
-
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL 
@@ -108,11 +98,12 @@ expr:
   | LBRACK arr_opt  RBRACK { ArrLit($2)       }
   | ID LBRACK expr RBRACK {  ArrGe($1, $3)    } 
   | ID LBRACK expr RBRACK ASSIGN expr { ArrSe($1, $3, $6) }
-  | LBRACK mat RBRACK { let mat_list = List.rev $2 in
+  | LBRACK mat RBRACK { let mat = List.rev $2 in
                         let arrlit a = ArrLit(a) in
-                        MatLit(List.map arrlit mat_list)   }
+                        MatLit(List.map arrlit mat)   }
   | ID LBRACK expr RBRACK LBRACK expr RBRACK { MatGe($1, $3, $6) }
   | ID LBRACK expr RBRACK LBRACK expr RBRACK ASSIGN expr { MatSe($1, $3, $6, $9) }
+  | expr DOT ID LPAREN args_opt RPAREN  { StdLib($1, $3, $5) }
   | ID               { Id($1)                 }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }

@@ -62,9 +62,24 @@ let translate (globals, functions) =
         | _ -> L.const_int (ltype_of_typ t) 0
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
+ 
+  let idx_check_t : L.lltype =
+          L.var_arg_function_type void_t [| i32_t ; i32_t |] in
+  let idx_check_func : L.llvalue = 
+          L.declare_function "idx_check" idx_check_t the_module in
+
+  let switch_rows_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; i32_t; i32_t |] in
+  let switch_rows_i_func : L.llvalue =
+          L.declare_function "switch_rows_i" switch_rows_i_t the_module in
+
+  let switch_rows_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; i32_t; i32_t |] in
+  let switch_rows_f_func : L.llvalue =
+          L.declare_function "switch_rows_f" switch_rows_f_t the_module in
   
   let printarr_t : L.lltype =
-          L.var_arg_function_type i32_t [| i32_t ; L.pointer_type i32_t |] in
+          L.var_arg_function_type i32_t [| L.pointer_type i32_t |] in
   let printarr_func : L.llvalue =
       L.declare_function "printarr" printarr_t the_module in
 
@@ -151,27 +166,55 @@ let translate (globals, functions) =
       | SFliteral l -> L.const_float_of_string float_t l
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
                        L.build_global_stringptr str_wo_qt str_wo_qt  builder
-      | SIntMatLit (m) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length m))) "" builder in
-                        (* let t = Array.of_list [(L.const_int i32_t 0)] in
-                         let ptr = L.build_gep s t "" builder in
-                         ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);*)
+      | SIntMatLit (m) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
                          for i = 1 to ((List.length m)) do
-                            let t = Array.of_list [L.const_int i32_t (i-1)] in
+                            let t = [|L.const_int i32_t i|] in
                             let ptr = L.build_gep s t "" builder in
                             ignore(L.build_store (expr builder (List.nth m (i - 1))) ptr builder)
                          done;
+                         let dim = L.build_array_alloca i32_t (L.const_int i32_t 3) "" builder in
+                         for i = 0 to 3 do
+                            let t = [|L.const_int i32_t i|] in
+                            let ptr = L.build_gep dim t "" builder in
+                            if i = 0 then
+                            ignore(L.build_store (L.const_int i32_t 2) ptr builder)
+                            else if i = 1 then ignore(L.build_store (L.const_int i32_t (List.length m)) ptr builder)
+                            else
+                                 let eval (_, e) = match e with
+                                 | SIntArrLit l -> List.length l
+                                 | _ -> raise (Failure "impossible")
+                                 in
+                                 ignore(L.build_store (L.const_int i32_t (eval (List.hd m))) ptr builder)
+
+                        done;
+                         let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
+                         ignore(L.build_store dim s builder);
                          s
       | SFltMatLit (m) ->  let s = L.build_array_alloca float_arr_t (L.const_int i32_t ((List.length m))) "" builder in
-                        (* let t = Array.of_list [(L.const_int i32_t 0)] in
-                         let ptr = L.build_gep s t "" builder in
-                         ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);*)
                          for i = 1 to ((List.length m)) do
                             let t = Array.of_list [L.const_int i32_t (i-1)] in
                             let ptr = L.build_gep s t "" builder in
                             ignore(L.build_store (expr builder (List.nth m (i - 1))) ptr builder)
                          done;
+                         let dim = L.build_array_alloca float_t (L.const_int i32_t 3) "" builder in
+                         for i = 0 to 3 do
+                            let t = [|L.const_int i32_t i|] in
+                            let ptr = L.build_gep dim t "" builder in
+                            if i = 0 then
+                            ignore(L.build_store (L.const_float float_t 2.0) ptr builder)
+                            else if i = 1 then ignore(L.build_store (L.const_float float_t (float_of_int (List.length m))) ptr builder)
+                            else
+                                 let eval (_, e) = match e with
+                                 | SFltArrLit l -> float_of_int (List.length l)
+                                 | _ -> raise (Failure "impossible")
+                                 in
+                                 ignore(L.build_store (L.const_float float_t (eval (List.hd m))) ptr builder)
+
+                        done;
+                         let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
+                         ignore(L.build_store dim s builder);
                          s
-      | SMatGe (v, r, c) -> let row_num = Array.of_list [expr builder r] in
+      | SMatGe (v, r, c) -> let row_num = Array.of_list [L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder] in
                             let col_num = Array.of_list [L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder] in
                             let mat = L.build_load (lookup v) "" builder in
                             let row_ptr = L.build_gep mat row_num "" builder in
@@ -207,12 +250,18 @@ let translate (globals, functions) =
                          done;
                          s
       | SArrGe(v, e) -> let arr = L.build_load (lookup v) v builder in
-                        let idx = L.build_add (expr builder e) (L.const_int i32_t 1) "idx" builder in
-                        let t = Array.of_list [idx] in
+                        let idx = L.build_add (expr builder e) (L.const_int i32_t 1) "" builder in
+                        let size_ptr = L.build_gep arr (Array.of_list[L.const_int i32_t 0]) "" builder in
+                        let size = L.build_load size_ptr "" builder in
+                        ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                        let t = [|idx|] in
                         let ptr = L.build_gep arr t "" builder in
                         L.build_load ptr "" builder
       | SArrSe(v, i, e) -> let arr = L.build_load (lookup v) v builder in
                            let idx = L.build_add (expr builder i) (L.const_int i32_t 1) "idx" builder in
+                           let size_ptr = L.build_gep arr (Array.of_list[L.const_int i32_t 0]) "" builder in
+                        let size = L.build_load size_ptr "" builder in
+                        ignore(L.build_call idx_check_func [| idx; size |] "" builder);
                            let t = Array.of_list [idx] in
                            let ptr = L.build_gep arr t "" builder in
                            L.build_store (expr builder e) ptr builder
@@ -270,12 +319,8 @@ let translate (globals, functions) =
 	    "printf" builder
       | SCall ("println", [e]) ->
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
-      (*| SCall ("printarr", [e]) ->
-          let print = match (snd e) with
-                | SIntArrLit (a) -> L.build_call printarr_func [| (L.const_int i32_t (List.length l)); (expr builder e) |] "printarr" builder 
-                | SFltArrLit (a)  -> L.build_call printarr_func [| (L.const_int i32_t (List.length l)); (expr builder e) |] "printfltarr" builder in
-                | _ -> raise (Failure "not an array") in
-          print;*)
+      | SCall ("printarr", [e]) ->
+              L.build_call printarr_func [| (expr builder e) |] "printarr" builder 
       | SCall (f, args) ->             
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
@@ -283,6 +328,25 @@ let translate (globals, functions) =
                         A.Void -> ""
                       | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list llargs) result builder
+      | SStdLib (v, f, args) ->
+         match f with
+         | "row" -> let row_num = [|L.build_add (expr builder (List.hd args)) (L.const_int i32_t 1) "" builder|] in
+                    let mat = expr builder v in
+                    let row_ptr = L.build_gep mat row_num "" builder in
+                    L.build_load row_ptr "" builder
+         | "dim" -> let dim = [| L.const_int i32_t 0 |] in
+                    let mat = expr builder v in
+                    let dim_ptr = L.build_gep mat dim "" builder in
+                    L.build_load dim_ptr "" builder
+         | "switchRows" -> 
+                    (match (fst v) with
+                    | A.IntMat -> L.build_call switch_rows_i_func [| expr builder v; expr builder (List.hd args); expr builder (List.nth args 1) |] "switch_rows_i" builder
+                    | A.FltMat -> L.build_call switch_rows_f_func [| expr builder v; expr builder (List.hd args); expr builder (List.nth args 1) |] "switch_rows_f" builder
+                    | _ -> raise (Failure "Expression is not a matrix")
+                    )
+         | _ -> raise (Failure "not implemented")
+ 
+         
     in
     
     (* LLVM insists each basic block end with exactly one "terminator" 

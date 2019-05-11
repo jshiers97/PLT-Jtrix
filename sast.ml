@@ -19,7 +19,8 @@ and sx =
   | SId of string
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
-  | SAssign of string * sexpr
+  | SAssign of string * sexpr 
+  | SStdLib of sexpr * string * sexpr list
   | SCall of string * sexpr list
   | SNoexpr
 
@@ -58,6 +59,7 @@ let rec string_of_sexpr (t, e) =
   | SFltArrLit(l) -> "[ " ^ (String.concat ", " (List.map string_of_sexpr l)) ^ " }"
   | SArrGe(v, e) -> v ^ "[" ^ (string_of_sexpr e) ^ "]"
   | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_sexpr i) ^ "] = " ^ (string_of_sexpr e) 
+  | SStdLib(v, f, e) -> (string_of_sexpr v) ^ "." ^ f ^ "(" ^ (String.concat ", " (List.map string_of_sexpr e)) ^ "}"
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
