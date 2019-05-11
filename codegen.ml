@@ -132,6 +132,7 @@ let translate (globals, functions) =
 	SLiteral i  -> L.const_int i32_t i
       | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
       | SFliteral l -> L.const_float_of_string float_t l
+      | SCharLit l -> L.const_int i8_t 
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
                        L.build_global_stringptr str_wo_qt str_wo_qt  builder
       | SArrGe (v, i) -> let t = Array.of_list [(L.const_int i32_t (i+1))] in

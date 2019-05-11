@@ -19,7 +19,8 @@ type expr =
   | ArrGe of string * int
   | ArrSe of string * int * expr
   | Id of string
-  | Char_lit of char
+  (*added char lit*)
+  | CharLit of char
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
@@ -70,7 +71,7 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | StrLit(l) -> l
-  | Char_lit(l) -> l
+  | CharLit(l) -> Char.escaped l
   | IntArrLit(l) -> "int"
   | FltArrLit(l) -> "flt" 
   | ArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
@@ -105,6 +106,7 @@ let string_of_typ = function
   | String -> "string"
   | IntArr -> "intarr"
   | FltArr -> "fltarr"
+  | Char -> "char" 
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

@@ -15,7 +15,8 @@ open Ast
 %token <int list> INTARRLIT
 %token <float list> FLTARRLIT
 %token <string * int> ARRGE
-%token <char> CHAR_LIT
+(*Char Literal token added *)
+%token <char> CHARLITERAL
 %token EOF
 
 %start program
@@ -66,6 +67,7 @@ typ:
   | STRING { String }
   | INTARR { IntArr }
   | FLTARR { FltArr }
+  (*addition of chars*)
   | CHAR  { Char }
 
 vdecl_list:
@@ -101,7 +103,7 @@ expr:
   | INTARRLIT        { IntArrLit($1)          }
   | FLTARRLIT        { FltArrLit($1)          }
   (* adding char literals to expressions*)
-  | CHAR_LIT         { Char_lit($1)           }  
+  | CHARLITERAL         { CharLit($1)           }  
   | ID               { Id($1)                 }
   | ARRGE            { ArrGe(fst $1, snd $1)  }
   | ARRGE ASSIGN expr { ArrSe(fst $1, snd $1, $3) }
