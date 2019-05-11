@@ -1,10 +1,10 @@
 (* Ocamllex scanner for MicroC *)
 
-{ 
+{
 
 open Microcparse
 
-let list_of_string f l = 
+let list_of_string f l =
         let sep_arr = List.map String.trim (String.split_on_char ',' l) in
         List.map f sep_arr
 
@@ -48,19 +48,20 @@ rule token = parse
 | "float"  { FLOAT }
 | "void"   { VOID }
 | "string" { STRING }
+| "char"   { CHAR }
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
 | '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ']* '"' as str { STRINGLITERAL(str) }
-| '[' (sp (digits ',' sp)* (digits)? sp as int_arr) ']'  {  INTARRLIT(list_of_string int_of_string int_arr) } 
-| '[' (sp (flt ',' sp)* (flt)? sp as flt_arr) ']'  { FLTARRLIT(list_of_string float_of_string flt_arr) } 
+| '[' (sp (digits ',' sp)* (digits)? sp as int_arr) ']'  {  INTARRLIT(list_of_string int_of_string int_arr) }
+| '[' (sp (flt ',' sp)* (flt)? sp as flt_arr) ']'  { FLTARRLIT(list_of_string float_of_string flt_arr) }
 | "int[]"  { INTARR }
 | "float[]" { FLTARR }
 | digits as lxm { LITERAL(int_of_string lxm) }
 | flt  as lxm { FLIT(lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*     as lxm { ID(lxm) }
-| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var '[' (digits as ind) ']' { ARRGE(var, int_of_string ind)  } 
+| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var '[' (digits as ind) ']' { ARRGE(var, int_of_string ind)  }
 (*trying to do char literals *)
-| ['a'-'z' 'A'-'Z'] as lit {CHARLITERAL(lit) }
+| '\'' (['a'-'z' 'A'-'Z'] as lit) '\'' {CHARLITERAL(lit) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
