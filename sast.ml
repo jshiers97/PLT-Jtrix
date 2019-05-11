@@ -12,6 +12,7 @@ and sx =
   | SFltArrLit of float list
   | SArrGe of string * int
   | SArrSe of string * int * sexpr
+  | SStructLit of string
   | SId of string
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
@@ -35,7 +36,9 @@ type sfunc_decl = {
     sbody : sstmt list;
   }
 
-type sprogram = bind list * sfunc_decl list
+type sstruc_decl = { sstructname: string;  sstructelems: bind list; } 
+
+type sprogram = bind list * sfunc_decl list * sstruc_decl list
 
 (* Pretty-printing functions *)
 
@@ -53,6 +56,7 @@ let rec string_of_sexpr (t, e) =
           "[" ^ (String.concat ", " str_arr) ^ "]" *) 
   | SArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
   | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_sexpr e)
+  | SStructLit(s) -> "struct " ^ s 
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2

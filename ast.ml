@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void | String | IntArr | FltArr
+type typ = Int | Bool | Float | Void | String | StructId of string | IntArr | FltArr
 
 type bind = typ * string
 
@@ -18,6 +18,7 @@ type expr =
   | FltArrLit of float list
   | ArrGe of string * int
   | ArrSe of string * int * expr
+  | StructLit of string 
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -41,7 +42,13 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = bind list * func_decl list
+type struc_decl = {
+	structname : string;
+	structelems : bind list;
+  }
+
+
+type program = bind list * func_decl list * struc_decl list 
 
 (* Pretty-printing functions *)
 
@@ -73,6 +80,7 @@ let rec string_of_expr = function
   | FltArrLit(l) -> "flt" 
   | ArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
   | ArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_expr e)
+  | StructLit(s) -> "struct " ^ s
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
@@ -103,6 +111,7 @@ let string_of_typ = function
   | String -> "string"
   | IntArr -> "intarr"
   | FltArr -> "fltarr"
+  | StructId(s) -> s 
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

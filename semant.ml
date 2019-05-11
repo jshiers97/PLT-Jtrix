@@ -10,7 +10,7 @@ module StringMap = Map.Make(String)
 
    Check each global variable, then check each function *)
 
-let check (globals, functions) =
+let check (globals, functions, structures) =
 
   (* Verify a list of bindings has no void types or duplicate names *)
   let check_binds (kind : string) (binds : bind list) =
@@ -25,9 +25,26 @@ let check (globals, functions) =
     in dups (List.sort (fun (_,a) (_,b) -> compare a b) binds)
   in
 
-  (**** Check global variables ****)
+  (**** structures ****)
+  (* based off of the functions code *)
 
-  check_binds "global" globals;
+  (* Add structure name to symbol table and check for duplicates *)
+  let add_structure map structd =
+    let dup_err = "duplicate struct " ^ structd.structname
+    and make_err er = raise (Failure er)
+    and n = structd.structname 
+    in match structd with
+         _ when StringMap.mem n map -> make_err dup_err  
+       | _ ->  StringMap.add n structd map
+  in 
+  (* Collect structure names into symbol table *)
+  let _ = List.fold_left add_structure structures
+  in  
+
+  let check_structure structure = 
+    let elems = check_binds "formal" structure.structelems
+    in { sstructname = structure.structname;  sstructelems = elems } 
+  in 
 
   (**** Check functions ****)
 
@@ -205,4 +222,4 @@ let check (globals, functions) =
 	SBlock(sl) -> sl
       | _ -> raise (Failure ("internal error: block didn't become a block?"))
     }
-  in (globals, List.map check_function functions)
+  in (globals, List.map check_function functions, List.map check_structures structures) 
