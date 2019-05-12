@@ -8,16 +8,21 @@ and sx =
   | SFliteral of string
   | SBoolLit of bool
   | SStrLit of string
-  | SIntArrLit of int list
-  | SFltArrLit of float list
-  | SArrGe of string * int
-  | SArrSe of string * int * sexpr
+  | SIntMatLit of sexpr list
+  | SFltMatLit of sexpr list
+  | SIntArrLit of sexpr list
+  | SFltArrLit of sexpr list
+  | SArrGe of string * sexpr
+  | SArrSe of string * sexpr * sexpr
+  | SMatGe of string * sexpr * sexpr
+  | SMatSe of string * sexpr * sexpr * sexpr
   | SId of string
   (*creating SCharLit*)
   | SCharLit of char
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
-  | SAssign of string * sexpr
+  | SAssign of string * sexpr 
+  | SStdLib of sexpr * string * sexpr list
   | SCall of string * sexpr list
   | SNoexpr
 
@@ -49,13 +54,15 @@ let rec string_of_sexpr (t, e) =
   | SCharLit(l) -> Char.escaped l
   | SFliteral(l) -> l
   | SStrLit(l) -> l
-  (*| SArrLit(s, l) -> let str_arr =
-          match l with
-          | IL a -> List.map string_of_int a
-          | FL a -> List.map string_of_float a in
-          "[" ^ (String.concat ", " str_arr) ^ "]" *) 
-  | SArrGe(v, i) -> v ^ "[" ^ (string_of_int i) ^ "]"
-  | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_int i) ^ "] = " ^ (string_of_sexpr e)
+  | SIntMatLit(m) -> "[ " ^ (String.concat "; " (List.map string_of_sexpr m)) ^ " ]"
+  | SFltMatLit(m) -> "[ " ^ (String.concat "; " (List.map string_of_sexpr m)) ^ " ]"
+  | SMatGe(v, r, c) -> v ^ "[" ^ (string_of_sexpr r) ^ "][" ^ (string_of_sexpr c)^ "]"
+  | SMatSe(v, r, c, e) -> v ^ "[" ^ (string_of_sexpr r) ^ "][" ^ (string_of_sexpr c)^ "] = " ^ (string_of_sexpr e) 
+  | SIntArrLit(l) -> "[ " ^ (String.concat ", " (List.map string_of_sexpr l)) ^ " ]"
+  | SFltArrLit(l) -> "[ " ^ (String.concat ", " (List.map string_of_sexpr l)) ^ " }"
+  | SArrGe(v, e) -> v ^ "[" ^ (string_of_sexpr e) ^ "]"
+  | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_sexpr i) ^ "] = " ^ (string_of_sexpr e) 
+  | SStdLib(v, f, e) -> (string_of_sexpr v) ^ "." ^ f ^ "(" ^ (String.concat ", " (List.map string_of_sexpr e)) ^ "}"
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2

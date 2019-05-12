@@ -14,6 +14,7 @@ let digit = ['0' - '9']
 let digits = digit+
 let flt = digits '.'  digit* ( ['e' 'E'] ['+' '-']? digits )?
 let sp = (' ')*
+let var = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf } (* Whitespace *)
@@ -22,7 +23,10 @@ rule token = parse
 | ')'      { RPAREN }
 | '{'      { LBRACE }
 | '}'      { RBRACE }
+| '['      { LBRACK }
+| ']'      { RBRACK }
 | ';'      { SEMI }
+| '.'      { DOT }
 | ','      { COMMA }
 | '+'      { PLUS }
 | '-'      { MINUS }
@@ -52,16 +56,16 @@ rule token = parse
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
 | '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ']* '"' as str { STRINGLITERAL(str) }
-| '[' (sp (digits ',' sp)* (digits)? sp as int_arr) ']'  {  INTARRLIT(list_of_string int_of_string int_arr) }
-| '[' (sp (flt ',' sp)* (flt)? sp as flt_arr) ']'  { FLTARRLIT(list_of_string float_of_string flt_arr) }
 | "int[]"  { INTARR }
 | "float[]" { FLTARR }
+| "Matrix<int>" { INTMATRIX }
+| "Matrix<float>" { FLTMATRIX }
+| "new" { NEW }
 | digits as lxm { LITERAL(int_of_string lxm) }
 | flt  as lxm { FLIT(lxm) }
-| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*     as lxm { ID(lxm) }
-| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var '[' (digits as ind) ']' { ARRGE(var, int_of_string ind)  }
 (*trying to do char literals *)
 | '\'' (['a'-'z' 'A'-'Z'] as lit) '\'' {CHARLITERAL(lit) }
+| var  as lxm { ID(lxm) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 

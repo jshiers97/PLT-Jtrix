@@ -1,12 +1,12 @@
 #include <stdio.h>
 
-void printarr(int size, int* a) {
+void printarr(int* a) {
 	int* b = ++a;
 	int c = 0;
-	int d = *b++;
+	int d = a[-1];
 	printf("[");
 	for(; c < d ; c++) {
-		if(c < size - 1) {
+		if(c < d - 1) {
 			printf("%d, ", *b++);
 		}
 		else {

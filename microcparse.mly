@@ -7,15 +7,13 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
-%token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING CHAR
+%token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT CHAR
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL
-%token <int list> INTARRLIT
-%token <float list> FLTARRLIT
-%token <string * int> ARRGE
 %token <char> CHARLITERAL
+
 %token EOF
 
 %start program
@@ -67,6 +65,8 @@ typ:
   | INTARR { IntArr }
   | FLTARR { FltArr }
   | CHAR { Char }
+  | INTMATRIX { IntMat }
+  | FLTMATRIX { FltMat }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -98,12 +98,17 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
-  | INTARRLIT        { IntArrLit($1)          }
-  | FLTARRLIT        { FltArrLit($1)          }
   | CHARLITERAL      { CharLit($1)            }
+  | LBRACK arr_opt  RBRACK { ArrLit($2)       }
+  | ID LBRACK expr RBRACK {  ArrGe($1, $3)    }
+  | ID LBRACK expr RBRACK ASSIGN expr { ArrSe($1, $3, $6) }
+  | LBRACK mat RBRACK { let mat = List.rev $2 in
+                        let arrlit a = ArrLit(a) in
+                        MatLit(List.map arrlit mat)   }
+  | ID LBRACK expr RBRACK LBRACK expr RBRACK { MatGe($1, $3, $6) }
+  | ID LBRACK expr RBRACK LBRACK expr RBRACK ASSIGN expr { MatSe($1, $3, $6, $9) }
+  | expr DOT ID LPAREN args_opt RPAREN  { StdLib($1, $3, $5) }
   | ID               { Id($1)                 }
-  | ARRGE            { ArrGe(fst $1, snd $1)  }
-  | ARRGE ASSIGN expr { ArrSe(fst $1, snd $1, $3) }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
   | expr TIMES  expr { Binop($1, Mult,  $3)   }
@@ -129,3 +134,15 @@ args_opt:
 args_list:
     expr                    { [$1] }
   | args_list COMMA expr { $3 :: $1 }
+
+arr_opt:
+    /* nothing */  { []       }
+  | arr_list { List.rev $1 }
+
+arr_list:
+    expr { [$1] }
+  | arr_list COMMA expr { $3 :: $1 }
+
+mat:
+  | LBRACK arr_list RBRACK { [List.rev $2]  }
+  | mat SEMI LBRACK arr_list RBRACK { (List.rev $4) ::  $1 }
