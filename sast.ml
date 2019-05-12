@@ -21,7 +21,7 @@ and sx =
   | SCharLit of char
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
-  | SAssign of string * sexpr 
+  | SAssign of string * sexpr
   | SStdLib of sexpr * string * sexpr list
   | SCall of string * sexpr list
   | SNoexpr
@@ -50,18 +50,18 @@ let rec string_of_sexpr (t, e) =
   "{" ^ string_of_typ t ^ " : " ^ (match e with
   | SLiteral(l) -> string_of_int l
   | SBoolLit(true) -> "true"
-  | SBoolLit(false) -> "false" 
+  | SBoolLit(false) -> "false"
   | SCharLit(l) -> Char.escaped l
   | SFliteral(l) -> l
   | SStrLit(l) -> l
   | SIntMatLit(m) -> "[ " ^ (String.concat "; " (List.map string_of_sexpr m)) ^ " ]"
   | SFltMatLit(m) -> "[ " ^ (String.concat "; " (List.map string_of_sexpr m)) ^ " ]"
   | SMatGe(v, r, c) -> v ^ "[" ^ (string_of_sexpr r) ^ "][" ^ (string_of_sexpr c)^ "]"
-  | SMatSe(v, r, c, e) -> v ^ "[" ^ (string_of_sexpr r) ^ "][" ^ (string_of_sexpr c)^ "] = " ^ (string_of_sexpr e) 
+  | SMatSe(v, r, c, e) -> v ^ "[" ^ (string_of_sexpr r) ^ "][" ^ (string_of_sexpr c)^ "] = " ^ (string_of_sexpr e)
   | SIntArrLit(l) -> "[ " ^ (String.concat ", " (List.map string_of_sexpr l)) ^ " ]"
   | SFltArrLit(l) -> "[ " ^ (String.concat ", " (List.map string_of_sexpr l)) ^ " }"
   | SArrGe(v, e) -> v ^ "[" ^ (string_of_sexpr e) ^ "]"
-  | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_sexpr i) ^ "] = " ^ (string_of_sexpr e) 
+  | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_sexpr i) ^ "] = " ^ (string_of_sexpr e)
   | SStdLib(v, f, e) -> (string_of_sexpr v) ^ "." ^ f ^ "(" ^ (String.concat ", " (List.map string_of_sexpr e)) ^ "}"
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
@@ -71,7 +71,7 @@ let rec string_of_sexpr (t, e) =
   | SCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
   | SNoexpr -> ""
-				  ) ^ ")"				     
+				  ) ^ ")"
 
 let rec string_of_sstmt = function
     SBlock(stmts) ->
@@ -89,7 +89,7 @@ let rec string_of_sstmt = function
 
 let string_of_sfdecl fdecl =
   string_of_typ fdecl.styp ^ " " ^
-  fdecl.sfname ^ "(" ^ String.concat ", " (List.map snd fdecl.sformals) ^
+  fdecl.sfname ^ "(" ^ String.concat ", " (List.map (fun (_, v, _) -> v)fdecl.sformals) ^
   ")\n{\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.slocals) ^
   String.concat "" (List.map string_of_sstmt fdecl.sbody) ^

@@ -58,7 +58,7 @@ let translate (globals, functions) =
 
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
-    let global_var m (t, n) =
+    let global_var m (t, n, _) =
       let init = match t with
           A.Float -> L.const_float (ltype_of_typ t) 0.0
         | _ -> L.const_int (ltype_of_typ t) 0
@@ -105,7 +105,7 @@ let translate (globals, functions) =
     let function_decl m fdecl =
       let name = fdecl.sfname
       and formal_types =
-	Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.sformals)
+	Array.of_list (List.map (fun (t, _, _) -> ltype_of_typ t) fdecl.sformals)
       in let ftype = L.function_type (ltype_of_typ fdecl.styp) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
@@ -135,10 +135,13 @@ let translate (globals, functions) =
 	let local_var = L.build_alloca (ltype_of_typ t) n builder
 	in StringMap.add n local_var m
       in
-
-      let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals
+      (*maps type, ID, expr into type, ID*)
+      let tempformals = List.map (fun(t, v, _) -> (t, v)) fdecl.sformals in
+      let templocals = List.map(fun(t,v,_) -> (t,v)) fdecl.slocals
+      in
+      let formals = List.fold_left2 add_formal StringMap.empty tempformals
           (Array.to_list (L.params the_function)) in
-      List.fold_left add_local formals fdecl.slocals
+      List.fold_left add_local formals templocals
     in
 
     (* Return the value for a variable or formal argument.

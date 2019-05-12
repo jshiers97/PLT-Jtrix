@@ -15,14 +15,14 @@ let check (globals, functions) =
   (* Verify a list of bindings has no void types or duplicate names *)
   let check_binds (kind : string) (binds : bind list) =
     List.iter (function
-	(Void, b) -> raise (Failure ("illegal void " ^ kind ^ " " ^ b))
+	(Void, b, _) -> raise (Failure ("illegal void " ^ kind ^ " " ^ b))
       | _ -> ()) binds;
     let rec dups = function
         [] -> ()
-      |	((_,n1) :: (_,n2) :: _) when n1 = n2 ->
+      |	((_,n1, _) :: (_,n2, _) :: _) when n1 = n2 ->
 	  raise (Failure ("duplicate " ^ kind ^ " " ^ n1))
       | _ :: t -> dups t
-    in dups (List.sort (fun (_,a) (_,b) -> compare a b) binds)
+    in dups (List.sort (fun (_,a, _) (_,b, _) -> compare a b) binds)
   in
 
   (**** Check global variables ****)
@@ -32,39 +32,39 @@ let check (globals, functions) =
   (**** Check functions ****)
 
   (* Collect function declarations for built-in functions: no bodies *)
-  let built_in_decls = 
-    let add_bind map (name, ty) = StringMap.add name {
-      typ = Void;
-      fname = name; 
-      formals = [(ty, "x")];
+  let built_in_decls =
+    let add_bind map (name, ty, e) = StringMap.add name {
+      typ = e;
+      fname = name;
+      formals = [(ty, "x", Noexpr)];
       locals = []; body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", Int);
-			                         ("printb", Bool);
-			                         ("printf", Float);
-                                                 ("printbig", Int);
-                                                 ("println", String);
-                                                 ("printarr", IntArr);
-                                                 ("printfltarr", FltArr); ]
+    in List.fold_left add_bind StringMap.empty [ ("print", Int, Void);
+			                         ("printb", Bool, Void);
+			                         ("printf", Float, Void);
+                                                 ("printbig", Int, Void);
+                                                 ("println", String, Void);
+                                                 ("printarr", IntArr, Void);
+                                                 ("printfltarr", FltArr, Void); ]
   in
 
   (* Add function name to symbol table *)
-  let add_func map fd = 
+  let add_func map fd =
     let built_in_err = "function " ^ fd.fname ^ " may not be defined"
     and dup_err = "duplicate function " ^ fd.fname
     and make_err er = raise (Failure er)
     and n = fd.fname (* Name of the function *)
     in match fd with (* No duplicate functions or redefinitions of built-ins *)
          _ when StringMap.mem n built_in_decls -> make_err built_in_err
-       | _ when StringMap.mem n map -> make_err dup_err  
-       | _ ->  StringMap.add n fd map 
+       | _ when StringMap.mem n map -> make_err dup_err
+       | _ ->  StringMap.add n fd map
   in
 
   (* Collect all function names into one symbol table *)
   let function_decls = List.fold_left add_func built_in_decls functions
   in
-  
+
   (* Return a function from our symbol table *)
-  let find_func s = 
+  let find_func s =
     try StringMap.find s function_decls
     with Not_found -> raise (Failure ("unrecognized function " ^ s))
   in
@@ -80,10 +80,10 @@ let check (globals, functions) =
        the given lvalue type *)
     let check_assign lvaluet rvaluet err =
        if lvaluet = rvaluet then lvaluet else raise (Failure err)
-    in   
+    in
 
     (* Build local symbol table of variables for this function *)
-    let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
+    let symbols = List.fold_left (fun m (ty, name, _) -> StringMap.add name ty m)
 	                StringMap.empty (globals @ func.formals @ func.locals )
     in
 
@@ -121,10 +121,10 @@ let check (globals, functions) =
                       | Int -> (IntArr, SIntArrLit(sem_ele))
                       | Float -> (FltArr, SFltArrLit(sem_ele))
                       | _ -> raise (Failure "Invalid type for array"))
-      | ArrGe (v, e) -> 
+      | ArrGe (v, e) ->
           let ele_typ = match (type_of_identifier v) with
           | IntArr -> Int
-          | FltArr -> Float 
+          | FltArr -> Float
           | _ -> raise (Failure "Variable is not an array") in
           let ind_typ = match (expr e) with
           | (Int, _) -> (expr e)
@@ -139,7 +139,7 @@ let check (globals, functions) =
           | (Int, _) -> true
           | _ -> false in
           if(idx_type) then (
-                if (ele_type_arr = (fst (expr e))) then 
+                if (ele_type_arr = (fst (expr e))) then
                         (ele_type_arr, SArrSe(v, (expr i), (expr e)))
                 else raise (Failure ("expected type " ^ (string_of_typ ele_type_arr)
                  ^ " but received an expression of type " ^ string_of_typ (fst (expr e))))
@@ -180,10 +180,10 @@ let check (globals, functions) =
          | _ -> raise (Failure "Type does not have any standard library functions") in
          if((check_exp v') = 0) then
                  (
-                       (Int, SLiteral(5)) 
+                       (Int, SLiteral(5))
                  )
-         else  
-                let check_arg_num x a = 
+         else
+                let check_arg_num x a =
                         if ((List.length x) != a) then raise (Failure "Wrong number of arguments") in
                 let check_args e =
                         if(fst (expr e) != Int) then raise (Failure "Argument must be an integer") in
@@ -220,23 +220,23 @@ let check (globals, functions) =
                 | _ -> raise (Failure "Invalid matrix operation"))
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
-      | Assign(var, e) as ex -> 
+      | Assign(var, e) as ex ->
           let lt = type_of_identifier var
           and (rt, e') = expr e in
-          let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
+          let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^
             string_of_typ rt ^ " in " ^ string_of_expr ex
           in (check_assign lt rt err, SAssign(var, (rt, e')))
-      | Unop(op, e) as ex -> 
+      | Unop(op, e) as ex ->
           let (t, e') = expr e in
           let ty = match op with
             Neg when t = Int || t = Float -> t
           | Not when t = Bool -> Bool
-          | _ -> raise (Failure ("illegal unary operator " ^ 
+          | _ -> raise (Failure ("illegal unary operator " ^
                                  string_of_uop op ^ string_of_typ t ^
                                  " in " ^ string_of_expr ex))
           in (ty, SUnop(op, (t, e')))
-      | Binop(e1, op, e2) as e -> 
-          let (t1, e1') = expr e1 
+      | Binop(e1, op, e2) as e ->
+          let (t1, e1') = expr e1
           and (t2, e2') = expr e2 in
           (* All binary operators require operands of the same type *)
           let same = t1 = t2 in
@@ -253,26 +253,27 @@ let check (globals, functions) =
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
-      | Call(fname, args) as call -> 
+      | Call(fname, args) as call ->
           let fd = find_func fname in
           let param_length = List.length fd.formals in
           if List.length args != param_length then
-            raise (Failure ("expecting " ^ string_of_int param_length ^ 
+            raise (Failure ("expecting " ^ string_of_int param_length ^
                             " arguments in " ^ string_of_expr call))
-          else let check_call (ft, _) e = 
-            let (et, e') = expr e in 
+          else let check_call (ft, _) e =
+            let (et, e') = expr e in
             let err = "illegal argument found " ^ string_of_typ et ^
               " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e
             in (check_assign ft et err, e')
-          in 
-          let args' = List.map2 check_call fd.formals args
+          in
+          let tempformals = List.map (fun (t, v, _) -> (t,v)) fd.formals in
+          let args' = List.map2 check_call tempformals args
           in (fd.typ, SCall(fname, args'))
     in
 
-    let check_bool_expr e = 
+    let check_bool_expr e =
       let (t', e') = expr e
       and err = "expected Boolean expression in " ^ string_of_expr e
-      in if t' != Bool then raise (Failure err) else (t', e') 
+      in if t' != Bool then raise (Failure err) else (t', e')
     in
 
     (* Return a semantically-checked statement i.e. containing sexprs *)
@@ -283,14 +284,14 @@ let check (globals, functions) =
 	  SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
       | Return e -> let (t, e') = expr e in
-        if t = func.typ then SReturn (t, e') 
+        if t = func.typ then SReturn (t, e')
         else raise (
 	  Failure ("return gives " ^ string_of_typ t ^ " expected " ^
 		   string_of_typ func.typ ^ " in " ^ string_of_expr e))
-	    
+
 	    (* A block is correct if each statement is correct and nothing
 	       follows any Return statement.  Nested blocks are flattened. *)
-      | Block sl -> 
+      | Block sl ->
           let rec check_stmt_list = function
               [Return _ as s] -> [check_stmt s]
             | Return _ :: _   -> raise (Failure "nothing may follow a return")

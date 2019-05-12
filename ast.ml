@@ -7,7 +7,7 @@ type uop = Neg | Not
 
 type typ = Int | Bool | Float | Void | String | IntArr | FltArr | Char| IntMat | FltMat
 
-type bind = typ * string
+
 
 type expr =
     Literal of int
@@ -29,6 +29,8 @@ type expr =
   | StdLib of expr * string * expr list
   | Call of string * expr list
   | Noexpr
+
+  type bind = typ * string * expr
 
 type stmt =
     Block of stmt list
@@ -117,11 +119,11 @@ let string_of_typ = function
   | FltMat -> "fltmat"
   | Char -> "char"
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id, _) = string_of_typ t ^ " " ^ id ^ ";\n"
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map (fun (_, v, _) -> v) fdecl.formals) ^
   ")\n{\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
