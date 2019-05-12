@@ -8,10 +8,12 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT CHAR
 %token <int> LITERAL
 %token <bool> BLIT
-%token <string> ID FLIT STRINGLITERAL 
+%token <string> ID FLIT STRINGLITERAL
+%token <char> CHARLITERAL
+
 %token EOF
 
 %start program
@@ -62,6 +64,7 @@ typ:
   | STRING { String }
   | INTARR { IntArr }
   | FLTARR { FltArr }
+  | CHAR { Char }
   | INTMATRIX { IntMat }
   | FLTMATRIX { FltMat }
 
@@ -95,8 +98,9 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
+  | CHARLITERAL      { CharLit($1)            }
   | LBRACK arr_opt  RBRACK { ArrLit($2)       }
-  | ID LBRACK expr RBRACK {  ArrGe($1, $3)    } 
+  | ID LBRACK expr RBRACK {  ArrGe($1, $3)    }
   | ID LBRACK expr RBRACK ASSIGN expr { ArrSe($1, $3, $6) }
   | LBRACK mat RBRACK { let mat = List.rev $2 in
                         let arrlit a = ArrLit(a) in

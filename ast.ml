@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void | String | IntArr | FltArr | IntMat | FltMat
+type typ = Int | Bool | Float | Void | String | IntArr | FltArr | Char| IntMat | FltMat
 
 type bind = typ * string
 
@@ -21,6 +21,8 @@ type expr =
   | MatGe of string * expr * expr
   | MatSe of string * expr * expr * expr
   | Id of string
+  (*added char lit*)
+  | CharLit of char
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
@@ -72,6 +74,7 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | StrLit(l) -> l
+  | CharLit(l) -> Char.escaped l
   | ArrLit(l) -> let str_l = List.map string_of_expr l in
                  "[ " ^ String.concat ", " str_l ^ " ]"
   | MatLit(l) -> "mat"
@@ -112,6 +115,7 @@ let string_of_typ = function
   | FltArr -> "fltarr"
   | IntMat -> "intmat"
   | FltMat -> "fltmat"
+  | Char -> "char"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
