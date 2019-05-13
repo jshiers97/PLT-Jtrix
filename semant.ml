@@ -100,20 +100,20 @@ let check (globals, functions) =
       | BoolLit l  -> (Bool, SBoolLit l)
       | StrLit l   -> (String, SStrLit l)
       | MatLit (m) -> let first_typ = fst (expr (List.hd m)) in
-                      let check_consistent a = match (fst (expr a)) with
-                      | first_typ -> ""
-                      | _ -> raise (Failure "Inconsistent types in matrix") in
-                      ignore(List.map check_consistent m);
+                      let check_consistent a = 
+                         if((fst(expr a)) != first_typ) then
+                            raise (Failure "Inconsistent types in matrix") in
+                      ignore(List.iter check_consistent m);
                       let sem_ele = List.map expr m in
                       (match (first_typ) with
                       | IntArr -> (IntMat, SIntMatLit(sem_ele))
                       | FltArr -> (FltMat, SFltMatLit(sem_ele))
                       | _ -> raise (Failure "Invalid type for matrix"))
       | ArrLit (l) -> let first_typ = fst (expr (List.hd l)) in
-                      let check_consistent a = match (fst (expr a)) with
-                         | first_typ -> ""
-                         | _ -> raise (Failure "Inconsistent types in array") in
-                      ignore(List.map check_consistent l);
+                      let check_consistent a =
+                         if((fst(expr a)) != first_typ) then
+                            raise (Failure "Inconsistent types in array") in
+                      ignore(List.iter check_consistent l);
                       let sem_ele = List.map expr l in
                       (match (first_typ) with
                       | Int -> (IntArr, SIntArrLit(sem_ele))
@@ -191,31 +191,53 @@ let check (globals, functions) =
                 ignore(List.iter check_args e);
                 ((match (fst v') with
                   | IntMat -> IntArr
-                  | FltMat -> FltArr)
-                , SStdLib(v', f, e'));
+                  | FltMat -> FltArr
+                  | _ -> raise (Failure "Cannot get array from this type"))
+                , SStdLib(v', f, e'))
                 | "row" -> check_arg_num e 1;
                 ignore(List.iter check_args e);
                 ((match (fst v') with
                   | IntMat -> IntArr
-                  | FltMat -> FltArr),
-                SStdLib(v', f, e'));
+                  | FltMat -> FltArr
+                  | _ -> raise (Failure "Cannot get array from this type")),
+                SStdLib(v', f, e'))
                 | "spliceColumn" -> check_arg_num e 1;
                 ignore(List.iter check_args e);
-                (fst v', SStdLib(v', f, e'));
+                (fst v', SStdLib(v', f, e'))
                 | "spliceRow" -> check_arg_num e 1;
                 ignore(List.iter check_args e);
-                (fst v', SStdLib(v', f, e'));
+                (fst v', SStdLib(v', f, e'))
                 | "switchRows" -> check_arg_num e 2;
                 ignore(List.iter check_args e);
-                (fst v', SStdLib(v', f, e'));
+                (fst v', SStdLib(v', f, e'))
                 | "transpose" -> check_arg_num e 0;
-                (fst v', SStdLib(v', f, e'));
+                (fst v', SStdLib(v', f, e'))
                 | "dim" -> check_arg_num e 0;
                 ((match (fst v') with
                   | IntMat -> IntArr
-                  | FltMat -> FltArr),
-                SStdLib(v', f, e'));
+                  | FltMat -> FltArr
+                  | _ -> raise (Failure "Cannot get array from this type"))
+                ,
+                SStdLib(v', f, e'))
                 | _ -> raise (Failure "Invalid matrix operation"))
+      | InitArr(typ, e) ->
+                let check_e = match (expr e) with
+                | (Int, _) -> expr e
+                | _ -> raise (Failure "Value must be an integer") in
+                let check_arr_type = match typ with
+                | "int" -> IntArr
+                | "float" -> FltArr
+                | _ -> raise (Failure "Invalid array type") in
+                (check_arr_type, SInitArr(typ, check_e))
+      | InitMat(typ, r, c) ->
+                let check_e e = match (expr e) with
+                 | (Int, _) -> expr e
+                | _ -> raise (Failure "Value must be an integer") in
+                let check_arr_type = match typ with
+                | "int" -> IntMat
+                | "float" -> FltMat
+                | _ -> raise (Failure "Invalid array type") in
+                (check_arr_type, SInitMat(typ, check_e r, check_e c))
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 

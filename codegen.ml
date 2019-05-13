@@ -68,6 +68,16 @@ let translate (globals, functions) =
   let idx_check_func : L.llvalue = 
           L.declare_function "idx_check" idx_check_t the_module in
 
+  let init_mat_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| i32_t; i32_t |] in
+  let init_mat_i_func : L.llvalue =
+          L.declare_function "init_mati_i" init_mat_i_t the_module in
+  
+  let init_mat_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| i32_t; i32_t |] in
+  let init_mat_f_func : L.llvalue =
+          L.declare_function "init_mat_f" init_mat_f_t the_module in
+
   let switch_rows_i_t : L.lltype =
           L.var_arg_function_type int_mat_t [| int_mat_t; i32_t; i32_t |] in
   let switch_rows_i_func : L.llvalue =
@@ -77,7 +87,47 @@ let translate (globals, functions) =
           L.var_arg_function_type float_mat_t [| float_mat_t; i32_t; i32_t |] in
   let switch_rows_f_func : L.llvalue =
           L.declare_function "switch_rows_f" switch_rows_f_t the_module in
+ 
+  let transpose_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t |] in
+  let transpose_i_func : L.llvalue =
+          L.declare_function "transpose_i" transpose_i_t the_module in 
+ 
+  let transpose_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t |] in
+  let transpose_f_func : L.llvalue =
+          L.declare_function "transpose_f" transpose_f_t the_module in 
+
+  let splice_row_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; i32_t |] in
+  let splice_row_i_func : L.llvalue =
+          L.declare_function "splice_row_i" splice_row_i_t the_module in
+
+  let splice_row_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; i32_t |] in
+  let splice_row_f_func : L.llvalue =
+          L.declare_function "splice_row_f" splice_row_f_t the_module in 
+
+  let splice_col_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; i32_t |] in
+  let splice_col_i_func : L.llvalue =
+          L.declare_function "splice_col_i" splice_col_i_t the_module in
+
+  let splice_col_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; i32_t |] in
+  let splice_col_f_func : L.llvalue =
+          L.declare_function "splice_col_f" splice_col_f_t the_module in
+
+  let col_i_t : L.lltype =
+          L.var_arg_function_type int_arr_t [| int_mat_t; i32_t |] in
+  let col_i_func : L.llvalue =
+          L.declare_function "col_i" col_i_t the_module in
   
+  let col_f_t : L.lltype =
+          L.var_arg_function_type float_arr_t [| float_mat_t; i32_t |] in
+  let col_f_func : L.llvalue =
+          L.declare_function "col_f" col_f_t the_module in 
+
   let printarr_t : L.lltype =
           L.var_arg_function_type i32_t [| L.pointer_type i32_t |] in
   let printarr_func : L.llvalue =
@@ -146,19 +196,6 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
-    (* Creates float array *)
-    let create_flt_arr s l =
-        let t = Array.of_list [(L.const_int i32_t 0)] in
-        let ptr = L.build_gep s t "" builder in
-        ignore(L.build_store (L.const_float float_t (float_of_int (List.length l))) ptr builder);
-        for i = 1 to ((List.length l)) do
-            let t = Array.of_list  [(L.const_int i32_t i)] in
-            let ptr = L.build_gep s t "" builder in
-            ignore(L.build_store (L.const_float float_t (List.nth l (i-1))) ptr builder)
-         done;
-         s
-    in
-
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) = match e with
 	SLiteral i  -> L.const_int i32_t i
@@ -188,11 +225,11 @@ let translate (globals, functions) =
 
                         done;
                          let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
-                         ignore(L.build_store dim s builder);
+                         ignore(L.build_store dim dim_ptr builder);
                          s
-      | SFltMatLit (m) ->  let s = L.build_array_alloca float_arr_t (L.const_int i32_t ((List.length m))) "" builder in
+      | SFltMatLit (m) ->  let s = L.build_array_alloca float_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
                          for i = 1 to ((List.length m)) do
-                            let t = Array.of_list [L.const_int i32_t (i-1)] in
+                            let t = [|L.const_int i32_t i|] in
                             let ptr = L.build_gep s t "" builder in
                             ignore(L.build_store (expr builder (List.nth m (i - 1))) ptr builder)
                          done;
@@ -202,7 +239,7 @@ let translate (globals, functions) =
                             let ptr = L.build_gep dim t "" builder in
                             if i = 0 then
                             ignore(L.build_store (L.const_float float_t 2.0) ptr builder)
-                            else if i = 1 then ignore(L.build_store (L.const_float float_t (float_of_int (List.length m))) ptr builder)
+                            else if i = 1 then ignore(L.build_store (L.const_float float_t (float_of_int(List.length m))) ptr builder)
                             else
                                  let eval (_, e) = match e with
                                  | SFltArrLit l -> float_of_int (List.length l)
@@ -212,7 +249,7 @@ let translate (globals, functions) =
 
                         done;
                          let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
-                         ignore(L.build_store dim s builder);
+                         ignore(L.build_store dim dim_ptr builder);
                          s
       | SMatGe (v, r, c) -> let row_num = Array.of_list [L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder] in
                             let col_num = Array.of_list [L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder] in
@@ -265,6 +302,18 @@ let translate (globals, functions) =
                            let t = Array.of_list [idx] in
                            let ptr = L.build_gep arr t "" builder in
                            L.build_store (expr builder e) ptr builder
+      | SInitArr(t, e) -> let e' = expr builder e in
+                          (match t with
+                          | "int" -> L.build_array_alloca i32_t e' "" builder
+                          | "float" -> L.build_array_alloca float_t e' "" builder
+                          | _ -> raise (Failure "Invalid array type")
+                          )                    
+      | SInitMat(t, r, c) -> let r' = expr builder r and c' = expr builder c in
+                             (match t with
+                             | "int" -> L.build_call init_mat_i_func [| r'; c'|] "init_mat_i" builder
+                             | "float" -> L.build_call init_mat_f_func [| r'; c' |] "init_mat_f" builder
+                             | _ -> raise (Failure "Invalid matrix type")
+                             )
       | SNoexpr     -> L.const_int i32_t 0
       | SId s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in
@@ -344,6 +393,26 @@ let translate (globals, functions) =
                     | A.FltMat -> L.build_call switch_rows_f_func [| expr builder v; expr builder (List.hd args); expr builder (List.nth args 1) |] "switch_rows_f" builder
                     | _ -> raise (Failure "Expression is not a matrix")
                     )
+         | "transpose" ->
+                    (match (fst v) with
+                    | A.IntMat -> L.build_call transpose_i_func [| expr builder v |] "transpose_i" builder
+                    | A.FltMat  -> L.build_call transpose_f_func [| expr builder v |] "transpose_f" builder 
+                    | _ -> raise (Failure "not done"))
+         | "spliceRow" ->
+                    (match (fst v) with
+                    | A.IntMat -> L.build_call splice_row_i_func [| expr builder v; expr builder (List.hd args) |] "splice_row_i" builder
+                    | A.FltMat -> L.build_call splice_row_f_func [| expr builder v; expr builder (List.hd args) |] "splice_row_f" builder
+                    | _ -> raise (Failure "fml"))
+         | "spliceColumn" ->
+                    (match (fst v) with
+                    | A.IntMat -> L.build_call splice_col_i_func [| expr builder v; expr builder (List.hd args) |] "splice_col_i" builder
+                    | A.FltMat -> L.build_call splice_col_f_func [| expr builder v; expr builder (List.hd args) |] "splice_col_f" builder
+                    | _ -> raise (Failure "meh"))
+         | "col" ->
+                    (match (fst v) with
+                    | A.IntMat -> L.build_call col_i_func [| expr builder v; expr builder (List.hd args) |] "col_i" builder
+                    | A.FltMat -> L.build_call col_f_func [| expr builder v; expr builder (List.hd args) |] "col_f" builder
+                    | _ -> raise (Failure "meh"))
          | _ -> raise (Failure "not implemented")
  
          

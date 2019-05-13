@@ -20,6 +20,8 @@ type expr =
   | ArrSe of string * expr * expr
   | MatGe of string * expr * expr
   | MatSe of string * expr * expr * expr
+  | InitArr of string * expr
+  | InitMat of string * expr * expr
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -74,12 +76,14 @@ let rec string_of_expr = function
   | StrLit(l) -> l
   | ArrLit(l) -> let str_l = List.map string_of_expr l in
                  "[ " ^ String.concat ", " str_l ^ " ]"
-  | MatLit(l) -> "mat"
+  | MatLit(l) -> "[" ^ (String.concat "; " (List.map string_of_expr l)) ^ "]"
   | ArrGe(v, e) -> v ^ "[" ^ (string_of_expr e) ^ "]"
   | ArrSe(v, i, e) -> v ^ "[" ^ (string_of_expr i) ^ "] = " ^ (string_of_expr e)
   | MatGe(v, r, c) -> v ^ "[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "]"
   | MatSe(v, r, c, e) ->   v ^ "[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "] = " ^ (string_of_expr e)
   | StdLib(v, f, e) -> (string_of_expr v) ^ "." ^ f ^ "(" ^ (String.concat ", "(List.map string_of_expr e))  ^ ")"
+  | InitArr(t, e) -> "new " ^ t ^ "[" ^ (string_of_expr e) ^ "]"
+  | InitMat(t, r, c) -> "new Matrix<" ^ t ^ ">[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "]"
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
