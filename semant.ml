@@ -53,7 +53,18 @@ let check (globals, functions) =
     and dup_err = "duplicate function " ^ fd.fname
     and make_err er = raise (Failure er)
     and n = fd.fname (* Name of the function *)
-    in match fd with (* No duplicate functions or redefinitions of built-ins *)
+    in ignore(match n with
+    | "row" -> make_err built_in_err
+    | "col" -> make_err built_in_err
+    | "dim" -> make_err built_in_err 
+    | "transpose" -> make_err built_in_err 
+    | "switchRows" -> make_err built_in_err 
+    | "spliceRow" -> make_err built_in_err 
+    | "spliceColumn" -> make_err built_in_err  
+    | _ -> "Not an standard library function"
+
+    );
+    match fd with (* No duplicate functions or redefinitions of built-ins *)
          _ when StringMap.mem n built_in_decls -> make_err built_in_err
        | _ when StringMap.mem n map -> make_err dup_err  
        | _ ->  StringMap.add n fd map 
@@ -274,6 +285,16 @@ let check (globals, functions) =
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
       | Call(fname, args) as call -> 
+          ignore(match fname with
+          | "col" -> raise (Failure "col is a matrix function")
+          | "row" -> raise (Failure "row is a matrix function")
+          | "dim" -> raise (Failure "dim is a matrix function")
+          | "spliceRow" -> raise (Failure "spliceRow is a matrix function")
+          | "spliceColumn" -> raise (Failure "spliceColumn is a matrix function")
+          | "switchRows" -> raise (Failure "switchRows is a matrix function")
+          | "transpose" -> raise (Failure "transpose is a matrix function")
+          | _ -> "Not a matrix operation"
+          );
           let fd = find_func fname in
           let param_length = List.length fd.formals in
           if List.length args != param_length then
