@@ -2,6 +2,16 @@
    check the resulting AST and generate an SAST from it, generate LLVM IR,
    and dump the module *)
 
+let () =
+	let channel = stdin in
+	let lexbuf = Lexing.from_channel channel in
+	let ast = Microcparse.program Scanner.token lexbuf in
+	let sast = Semant.check ast in
+	let m = Codegen.translate sast in
+	  Llvm_analysis.assert_valid_module m;
+	  print_string (Llvm.string_of_llmodule m) 
+
+(*
 type action = Ast | Sast | LLVM_IR | Compile
 
 let () =
@@ -29,4 +39,4 @@ let () =
     | LLVM_IR -> print_string (Llvm.string_of_llmodule (Codegen.translate sast))
     | Compile -> let m = Codegen.translate sast in
 	Llvm_analysis.assert_valid_module m;
-	print_string (Llvm.string_of_llmodule m)
+	print_string (Llvm.string_of_llmodule m) *)

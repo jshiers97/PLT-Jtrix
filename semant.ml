@@ -44,7 +44,10 @@ let check (globals, functions) =
                                                  ("printbig", Int, Void);
                                                  ("println", String, Void);
                                                  ("printarr", IntArr, Void);
-                                                 ("printfltarr", FltArr, Void); ]
+                                                 ("printfltarr", FltArr, Void);
+
+						 ("int_to_f", Int, Float);
+						 ("f_to_int", Float, Int ); ]
   in
 
   (* Add function name to symbol table *)

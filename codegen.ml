@@ -99,6 +99,17 @@ let translate (globals, functions) =
   let printbig_func : L.llvalue =
       L.declare_function "printbig" printbig_t the_module in
 
+  let f_to_in_t : L.lltype =
+      L.function_type float_t [| L.pointer_type i8_t |] in
+  let f_to_int_func : L.llvalue =
+      L.declare_function "f_to_int" f_to_in_t the_module in
+
+  let int_to_f_t : L.lltype =
+      L.function_type i32_t [| L.pointer_type i8_t |] in
+  let int_to_f_func : L.llvalue =
+      L.declare_function "int_to_f" int_to_f_t the_module in 
+
+
   (* Define each function (arguments and return type) so we can
      call it even before we've created its body *)
   let function_decls : (L.llvalue * sfunc_decl) StringMap.t =
@@ -326,6 +337,11 @@ let translate (globals, functions) =
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
       | SCall ("printarr", [e]) ->
               L.build_call printarr_func [| (expr builder e) |] "printarr" builder
+      | SCall ("f_to_int", [e]) ->
+	      L.build_fptosi (expr builder e) i32_t "int_from" builder
+      | SCall ("int_to_f", [e]) ->  
+	      L.build_sitofp (expr builder e) float_t "float_from" builder 
+ 
       | SCall (f, args) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
