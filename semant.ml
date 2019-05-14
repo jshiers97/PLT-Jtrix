@@ -284,6 +284,14 @@ let check (globals, functions) =
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
+      | Free(e) ->
+          let e' = expr e in
+          (match (fst e') with 
+          | IntArr -> (Void, SFree(e'))
+          | IntMat -> (Void, SFree(e'))
+          | FltArr -> (Void, SFree(e'))
+          | FltMat -> (Void, SFree(e'))
+          | _ -> raise (Failure "Cannot free expression"))
       | Call(fname, args) as call -> 
           ignore(match fname with
           | "col" -> raise (Failure "col is a matrix function")

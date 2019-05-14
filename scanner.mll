@@ -56,6 +56,7 @@ rule token = parse
 | "Matrix<int>" { INTMATRIX }
 | "Matrix<float>" { FLTMATRIX }
 | "new" { NEW }
+| "free" { FREE }
 | digits as lxm { LITERAL(int_of_string lxm) }
 | flt  as lxm { FLIT(lxm) }
 | var  as lxm { ID(lxm) }

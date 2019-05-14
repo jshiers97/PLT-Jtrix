@@ -28,6 +28,7 @@ type expr =
   | Assign of string * expr
   | StdLib of expr * string * expr list
   | Call of string * expr list
+  | Free of expr
   | Noexpr
 
 type stmt =
@@ -91,6 +92,7 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Free(e) -> "free(" ^ string_of_expr e ^ ")"
   | Noexpr -> ""
 
 let rec string_of_stmt = function

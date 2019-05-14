@@ -71,7 +71,7 @@ let translate (globals, functions) =
   let init_mat_i_t : L.lltype =
           L.var_arg_function_type int_mat_t [| i32_t; i32_t |] in
   let init_mat_i_func : L.llvalue =
-          L.declare_function "init_mati_i" init_mat_i_t the_module in
+          L.declare_function "init_mat_i" init_mat_i_t the_module in
   
   let init_mat_f_t : L.lltype =
           L.var_arg_function_type float_mat_t [| i32_t; i32_t |] in
@@ -203,7 +203,7 @@ let translate (globals, functions) =
       | SFliteral l -> L.const_float_of_string float_t l
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
                        L.build_global_stringptr str_wo_qt str_wo_qt  builder
-      | SIntMatLit (m) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
+      | SIntMatLit (m) -> let s = L.build_array_malloc int_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
                          for i = 1 to ((List.length m)) do
                             let t = [|L.const_int i32_t i|] in
                             let ptr = L.build_gep s t "" builder in
@@ -227,7 +227,7 @@ let translate (globals, functions) =
                          let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
                          ignore(L.build_store dim dim_ptr builder);
                          s
-      | SFltMatLit (m) ->  let s = L.build_array_alloca float_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
+      | SFltMatLit (m) ->  let s = L.build_array_malloc float_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
                          for i = 1 to ((List.length m)) do
                             let t = [|L.const_int i32_t i|] in
                             let ptr = L.build_gep s t "" builder in
@@ -266,7 +266,7 @@ let translate (globals, functions) =
                             let col_ptr = L.build_gep row col_num "" builder in
                             let typ_e = expr builder (ty, e) in
                             L.build_store (typ_e) col_ptr builder
-     | SIntArrLit (a) -> let s = L.build_array_alloca i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
+     | SIntArrLit (a) -> let s = L.build_array_malloc i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                          let t = Array.of_list [(L.const_int i32_t 0)] in
                          let ptr = L.build_gep s t "" builder in
                          ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);
@@ -276,7 +276,7 @@ let translate (globals, functions) =
                             ignore(L.build_store (expr builder (List.nth a (i - 1))) ptr builder)
                          done;
                          s
-      | SFltArrLit (a) -> let s = L.build_array_alloca float_t (L.const_int i32_t ((List.length a)+1)) "" builder in
+      | SFltArrLit (a) -> let s = L.build_array_malloc float_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                          let t = Array.of_list [(L.const_int i32_t 0)] in
                          let ptr = L.build_gep s t "" builder in
                          ignore(L.build_store (L.const_float float_t (float_of_int (List.length a))) ptr builder);
@@ -304,8 +304,8 @@ let translate (globals, functions) =
                            L.build_store (expr builder e) ptr builder
       | SInitArr(t, e) -> let e' = expr builder e in
                           (match t with
-                          | "int" -> L.build_array_alloca i32_t e' "" builder
-                          | "float" -> L.build_array_alloca float_t e' "" builder
+                          | "int" -> L.build_array_malloc i32_t e' "" builder
+                          | "float" -> L.build_array_malloc float_t e' "" builder
                           | _ -> raise (Failure "Invalid array type")
                           )                    
       | SInitMat(t, r, c) -> let r' = expr builder r and c' = expr builder c in
@@ -377,6 +377,9 @@ let translate (globals, functions) =
                         A.Void -> ""
                       | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list llargs) result builder
+      | SFree(e) -> 
+         let e' = expr builder e in
+         L.build_free e' builder
       | SStdLib (v, f, args) ->
          match f with
          | "row" -> let row_num = [|L.build_add (expr builder (List.hd args)) (L.const_int i32_t 1) "" builder|] in
@@ -413,7 +416,7 @@ let translate (globals, functions) =
                     | A.IntMat -> L.build_call col_i_func [| expr builder v; expr builder (List.hd args) |] "col_i" builder
                     | A.FltMat -> L.build_call col_f_func [| expr builder v; expr builder (List.hd args) |] "col_f" builder
                     | _ -> raise (Failure "meh"))
-         | _ -> raise (Failure "not implemented")
+         | _ -> raise (Failure "not a standard library function")
  
          
     in

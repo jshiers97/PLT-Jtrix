@@ -9,6 +9,7 @@ open Ast
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT
+%token FREE
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL 
@@ -24,7 +25,7 @@ open Ast
 %left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
-%right DOT
+%nonassoc DOT
 %left PLUS MINUS
 %left TIMES DIVIDE
 %right NOT
@@ -123,6 +124,7 @@ expr:
   | NOT expr         { Unop(Not, $2)          }
   | ID ASSIGN expr   { Assign($1, $3)         }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }
+  | FREE LPAREN expr RPAREN { Free($3)        }
   | LPAREN expr RPAREN { $2                   }
 
 args_opt:
