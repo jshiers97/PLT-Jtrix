@@ -8,12 +8,8 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
-<<<<<<< HEAD
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT
-%token FREE
-=======
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT CHAR
->>>>>>> e3e6c5f584aae56b3db2cc7a28321360bb39d8d3
+%token FREE CHAR
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL
@@ -106,7 +102,6 @@ expr:
   | STRINGLITERAL    { StrLit($1)             }
   | LBRACK mat RBRACK { $2    }
   | CHARLITERAL      { CharLit($1)            }
-  | LBRACK arr_opt  RBRACK { ArrLit($2)       }
   | ID LBRACK expr RBRACK {  ArrGe($1, $3)    }
   | ID LBRACK expr RBRACK ASSIGN expr { ArrSe($1, $3, $6) }
   | ID LBRACK expr RBRACK LBRACK expr RBRACK { MatGe($1, $3, $6) }
