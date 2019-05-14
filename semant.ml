@@ -117,6 +117,8 @@ let check (globals, functions) =
         Literal  l -> (Int, SLiteral l)
       | Fliteral l -> (Float, SFliteral l)
       | BoolLit l  -> (Bool, SBoolLit l)
+      (*Semantically checked Char Literal added*)
+      | CharLit l -> (Char, SCharLit l)
       | StrLit l   -> (String, SStrLit l)
       | MatLit (m) -> let first_typ = fst (expr (List.hd m)) in
                       let check_consistent a = 

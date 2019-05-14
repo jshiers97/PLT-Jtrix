@@ -253,9 +253,9 @@ double** transpose_f(double** old) {
 int** switch_rows_i(int** mat, int x, int y) {
 	idx_check(x, mat[0][1]);
 	idx_check(y, mat[0][1]);
-	
+
 	int i = 0;
-	for(; i < mat[0][2]; i++) {	
+	for(; i < mat[0][2]; i++) {
 		int temp = mat[x+1][i+1];
 		mat[x+1][i+1] = mat[y+1][i+1];
 		mat[y+1][i+1] = temp;
@@ -267,7 +267,7 @@ int** switch_rows_i(int** mat, int x, int y) {
 double** switch_rows_f(double** mat, int x, int y) {
 	idx_check(x, (int) mat[0][1]);
 	idx_check(y, (int) mat[0][1]);
-	
+
 	int i = 0;
 	for(; i < (int) mat[0][2]; i++) {
 		double temp = mat[x+1][i+1];

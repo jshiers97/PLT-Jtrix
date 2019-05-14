@@ -19,6 +19,8 @@ and sx =
   | SInitArr of string * sexpr
   | SInitMat of string * sexpr * sexpr
   | SId of string
+  (*creating SCharLit*)
+  | SCharLit of char
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
   | SAssign of string * sexpr 
@@ -50,7 +52,8 @@ let rec string_of_sexpr (t, e) =
   "{" ^ string_of_typ t ^ " : " ^ (match e with
   | SLiteral(l) -> string_of_int l
   | SBoolLit(true) -> "true"
-  | SBoolLit(false) -> "false"
+  | SBoolLit(false) -> "false" 
+  | SCharLit(l) -> Char.escaped l
   | SFliteral(l) -> l
   | SStrLit(l) -> l
   | SIntMatLit(m) -> "[ " ^ (String.concat "; " (List.map string_of_sexpr m)) ^ " ]"
