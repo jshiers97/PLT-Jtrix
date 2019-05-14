@@ -60,6 +60,8 @@ let check (globals, functions) =
                                                  ("transpose_f", [FltMat], FltMat);
                                                  ("switchRows_i", [IntMat; Int; Int], IntMat);
                                                  ("switchRows_f", [FltMat; Int; Int], FltMat);
+                                                 ("size_i", [IntArr], Int);
+                                                 ("size_f", [FltArr], Int);
                                                  ] 
   in
 

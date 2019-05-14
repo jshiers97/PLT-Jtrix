@@ -4,10 +4,10 @@
 
 void idx_check(int idx, int size) {
 	if(idx < 0) {
-		printf("Index must be greater than 0! Aborting...\n");
+		printf("Fatal error: exception Failure(\"Index must be greater than 0\")");
 		exit(1);
 	} else if(idx > size) {
-		printf("Index out of bounds! Aborting...\n");
+		printf("Fatal error: exception Failure(\"Index out of bounds\")");
 		exit(1);
 	}
 }

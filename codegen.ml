@@ -128,25 +128,10 @@ let translate (globals, functions) =
   let col_f_func : L.llvalue =
           L.declare_function "col_f" col_f_t the_module in 
 
-  let printarr_t : L.lltype =
-          L.var_arg_function_type i32_t [| L.pointer_type i32_t |] in
-  let printarr_func : L.llvalue =
-      L.declare_function "printarr" printarr_t the_module in
-
-  let printfltarr_t : L.lltype =
-          L.var_arg_function_type float_t [| i32_t ; L.pointer_type float_t |] in
-  let printfltarr_func : L.llvalue =
-          L.declare_function "printfltarr" printfltarr_t the_module in
-
   let printf_t : L.lltype = 
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = 
       L.declare_function "printf" printf_t the_module in
-
-  let printbig_t : L.lltype =
-      L.function_type i32_t [| i32_t |] in
-  let printbig_func : L.llvalue =
-      L.declare_function "printbig" printbig_t the_module in
 
   (* Define each function (arguments and return type) so we can 
      call it even before we've created its body *)
@@ -208,7 +193,13 @@ let translate (globals, functions) =
               let row_ptr = L.build_gep mat row_num "" builder in
               L.build_load row_ptr "" builder
     in
- 
+
+    (* Returns the size of array *)
+    let get_size arr =
+         let s = L.build_gep arr [| L.const_int i32_t 0 |] "" builder in
+         L.build_load s "" builder
+    in
+
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) = match e with
 	SLiteral i  -> L.const_int i32_t i
@@ -357,11 +348,14 @@ let translate (globals, functions) =
                           (match t with
                           | "int" -> let s = L.build_array_malloc i32_t e' "" builder in
                                      let t = L.build_gep s [|L.const_int i32_t 0|] "" builder in
+                                     ignore(L.build_call idx_check_func [| e'; e' |] "" builder);
                                      ignore(L.build_store e' t  builder);
                                      s
-                          | "float" -> let s = L.build_array_malloc float_t e' "" builder in
+                          | "float" -> let cast = L.build_sitofp e' float_t "" builder in
+                                       let s = L.build_array_malloc float_t e' "" builder in
                                        let t = L.build_gep s [|L.const_int i32_t 0|] "" builder in
-                                       ignore(L.build_store e' t builder);
+                                       ignore(L.build_call idx_check_func [| e'; e' |] "" builder);
+                                       ignore(L.build_store cast t builder);
                                        s
                           | _ -> raise (Failure "Invalid array type")
                           )                    
@@ -418,15 +412,11 @@ let translate (globals, functions) =
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
-      | SCall ("printbig", [e]) ->
-	  L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | SCall ("printf", [e]) -> 
 	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
 	    "printf" builder
       | SCall ("println", [e]) ->
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
-      | SCall ("printarr", [e]) ->
-              L.build_call printarr_func [| (expr builder e) |] "printarr" builder 
       | SCall ("transpose_i", [e]) ->
               L.build_call transpose_i_func [| expr builder e |] "tranpose_i" builder
       | SCall ("transpose_f", [e]) ->
@@ -461,6 +451,12 @@ let translate (globals, functions) =
               L.build_call switch_rows_i_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_i" builder
       | SCall ("switchRows_f", [m;r1;r2]) ->
               L.build_call switch_rows_f_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_f" builder
+      | SCall ("size_i", [a]) -> 
+         let a' = expr builder a in
+         get_size a'
+      | SCall ("size_f", [a]) ->
+         let a' = expr builder a in
+         L.build_fptosi (get_size a') i32_t "" builder
       | SCall (f, args) ->             
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
