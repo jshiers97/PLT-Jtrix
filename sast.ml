@@ -22,7 +22,6 @@ and sx =
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
   | SAssign of string * sexpr 
-  | SStdLib of sexpr * string * sexpr list
   | SCall of string * sexpr list
   | SFree of sexpr
   | SNoexpr
@@ -62,7 +61,6 @@ let rec string_of_sexpr (t, e) =
   | SFltArrLit(l) -> "[ " ^ (String.concat ", " (List.map string_of_sexpr l)) ^ " }"
   | SArrGe(v, e) -> v ^ "[" ^ (string_of_sexpr e) ^ "]"
   | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_sexpr i) ^ "] = " ^ (string_of_sexpr e) 
-  | SStdLib(v, f, e) -> (string_of_sexpr v) ^ "." ^ f ^ "(" ^ (String.concat ", " (List.map string_of_sexpr e)) ^ "}"
   | SInitArr(t, e) -> "new " ^ t ^ "[" ^ (string_of_sexpr e) ^ "]"
   | SInitMat(t, r, c) -> "new Matrix<" ^ t ^ ">[" ^ (string_of_sexpr r) ^ "][" ^ (string_of_sexpr c) ^ "]"
   | SId(s) -> s

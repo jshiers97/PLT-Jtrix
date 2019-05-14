@@ -196,6 +196,19 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
+    (* Returns the dimension array stored in matrix *)
+    let get_dim mat =
+              let dim = [| L.const_int i32_t 0 |] in
+              let dim_ptr = L.build_gep mat dim "" builder in
+              L.build_load dim_ptr "" builder
+    in
+
+    (* Returns the row stored in the matrix *)
+    let get_row mat row_num =
+              let row_ptr = L.build_gep mat row_num "" builder in
+              L.build_load row_ptr "" builder
+    in
+ 
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) = match e with
 	SLiteral i  -> L.const_int i32_t i
@@ -251,16 +264,44 @@ let translate (globals, functions) =
                          let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
                          ignore(L.build_store dim dim_ptr builder);
                          s
-      | SMatGe (v, r, c) -> let row_num = Array.of_list [L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder] in
-                            let col_num = Array.of_list [L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder] in
+      | SMatGe (v, r, c) -> let r_n = L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder in
+                            let c_n = L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder in
+                            let row_num = [| r_n |] in
+                            let col_num = [| c_n |] in
                             let mat = L.build_load (lookup v) "" builder in
+                            let dim = L.build_gep mat [| L.const_int i32_t 0 |] "" builder in
+                            let dim_arr = L.build_load dim "" builder in
+                            let r_size = L.build_gep dim_arr [| L.const_int i32_t 1|] "" builder in
+                            let c_size = L.build_gep dim_arr [| L.const_int i32_t 2|] "" builder  in
+                            if ((L.type_of (lookup v)) = int_mat_t) then (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_load r_size "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_load c_size "" builder |] "" builder);
+                            )
+                            else (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_fptosi (L.build_load r_size "" builder) i32_t "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_fptosi (L.build_load c_size "" builder) i32_t "" builder |] "" builder);
+                            );
                             let row_ptr = L.build_gep mat row_num "" builder in
                             let row = L.build_load row_ptr "" builder in
                             let col_ptr = L.build_gep row col_num "" builder in
                             L.build_load col_ptr "" builder
-      | SMatSe (v, r, c, (ty, e)) -> let row_num = Array.of_list [(expr builder r)] in
-                            let col_num = Array.of_list [L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder] in
+      | SMatSe (v, r, c, (ty, e)) -> let r_n = L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder in
+                            let c_n = L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder in
+                            let row_num = [| r_n |] in
+                            let col_num = [| c_n |] in
                             let mat = L.build_load (lookup v) "" builder in
+                            let dim = L.build_gep mat [| L.const_int i32_t 0 |] "" builder in
+                            let dim_arr = L.build_load dim "" builder in
+                            let r_size = L.build_gep dim_arr [| L.const_int i32_t 1|] "" builder in
+                            let c_size = L.build_gep dim_arr [| L.const_int i32_t 2|] "" builder  in
+                            if ((L.type_of (lookup v)) = int_mat_t) then (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_load r_size "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_load c_size "" builder |] "" builder);
+                            )
+                            else (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_fptosi (L.build_load r_size "" builder) i32_t "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_fptosi (L.build_load c_size "" builder) i32_t "" builder |] "" builder);
+                            );
                             let row_ptr = L.build_gep mat row_num "" builder in
                             let row = L.build_load row_ptr "" builder in
                             let col_ptr = L.build_gep row col_num "" builder in
@@ -288,24 +329,40 @@ let translate (globals, functions) =
                          s
       | SArrGe(v, e) -> let arr = L.build_load (lookup v) v builder in
                         let idx = L.build_add (expr builder e) (L.const_int i32_t 1) "" builder in
-                        let size_ptr = L.build_gep arr (Array.of_list[L.const_int i32_t 0]) "" builder in
+                        let size_ptr = L.build_gep arr [|L.const_int i32_t 0|] "" builder in
                         let size = L.build_load size_ptr "" builder in
-                        ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                        if(L.type_of (lookup v) = int_arr_t) then (
+                               ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                        )
+                        else (
+                                ignore(L.build_call idx_check_func [| idx; L.build_fptosi size i32_t "" builder |] "" builder);
+                        );
                         let t = [|idx|] in
                         let ptr = L.build_gep arr t "" builder in
                         L.build_load ptr "" builder
       | SArrSe(v, i, e) -> let arr = L.build_load (lookup v) v builder in
                            let idx = L.build_add (expr builder i) (L.const_int i32_t 1) "idx" builder in
                            let size_ptr = L.build_gep arr (Array.of_list[L.const_int i32_t 0]) "" builder in
-                        let size = L.build_load size_ptr "" builder in
-                        ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                           let size = L.build_load size_ptr "" builder in
+                           if(L.type_of (lookup v) = int_arr_t) then (
+                              ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                           )
+                           else (
+                              ignore(L.build_call idx_check_func [| idx; L.build_fptosi size i32_t "" builder |] "" builder);
+                           ); 
                            let t = Array.of_list [idx] in
                            let ptr = L.build_gep arr t "" builder in
                            L.build_store (expr builder e) ptr builder
       | SInitArr(t, e) -> let e' = expr builder e in
                           (match t with
-                          | "int" -> L.build_array_malloc i32_t e' "" builder
-                          | "float" -> L.build_array_malloc float_t e' "" builder
+                          | "int" -> let s = L.build_array_malloc i32_t e' "" builder in
+                                     let t = L.build_gep s [|L.const_int i32_t 0|] "" builder in
+                                     ignore(L.build_store e' t  builder);
+                                     s
+                          | "float" -> let s = L.build_array_malloc float_t e' "" builder in
+                                       let t = L.build_gep s [|L.const_int i32_t 0|] "" builder in
+                                       ignore(L.build_store e' t builder);
+                                       s
                           | _ -> raise (Failure "Invalid array type")
                           )                    
       | SInitMat(t, r, c) -> let r' = expr builder r and c' = expr builder c in
@@ -370,6 +427,40 @@ let translate (globals, functions) =
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
       | SCall ("printarr", [e]) ->
               L.build_call printarr_func [| (expr builder e) |] "printarr" builder 
+      | SCall ("transpose_i", [e]) ->
+              L.build_call transpose_i_func [| expr builder e |] "tranpose_i" builder
+      | SCall ("transpose_f", [e]) ->
+              L.build_call transpose_f_func [| expr builder e |] "transpose_f" builder
+      | SCall ("row_i", [m;r]) ->
+              let row_num = [|L.build_add (expr builder r) (L.const_int i32_t 1) "" builder|] in
+              let mat = expr builder m in
+              get_row mat row_num
+      | SCall ("row_f", [m;r]) ->
+              let row_num = [|L.build_add (expr builder r) (L.const_int i32_t 1) "" builder|] in
+              let mat = expr builder m in
+              get_row mat row_num
+      | SCall ("dim_i", [m]) ->
+              let mat = expr builder m in
+              get_dim mat
+      | SCall ("dim_f", [m]) ->
+              let mat = expr builder m in
+              get_dim mat
+      | SCall ("col_i", [m;c]) ->
+              L.build_call col_i_func [| expr builder m; expr builder c |] "col_i" builder
+      | SCall ("col_f", [m;c]) ->
+              L.build_call col_f_func [| expr builder m; expr builder c |] "col_f" builder
+      | SCall ("spliceRow_i", [m;r]) ->
+              L.build_call splice_row_i_func [| expr builder m; expr builder r |] "splice_row_i" builder
+      | SCall ("spliceRow_f", [m;r]) ->
+              L.build_call splice_row_f_func [| expr builder m; expr builder r |] "splice_row_f" builder
+      | SCall ("spliceColumn_i", [m;r]) ->
+              L.build_call splice_col_i_func [| expr builder m; expr builder r |] "splice_col_i" builder
+      | SCall ("spliceColumn_f", [m;r]) ->
+              L.build_call splice_col_f_func [| expr builder m; expr builder r |] "splice_col_f" builder
+      | SCall ("switchRows_i", [m;r1;r2]) ->
+              L.build_call switch_rows_i_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_i" builder
+      | SCall ("switchRows_f", [m;r1;r2]) ->
+              L.build_call switch_rows_f_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_f" builder
       | SCall (f, args) ->             
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
@@ -379,45 +470,7 @@ let translate (globals, functions) =
          L.build_call fdef (Array.of_list llargs) result builder
       | SFree(e) -> 
          let e' = expr builder e in
-         L.build_free e' builder
-      | SStdLib (v, f, args) ->
-         match f with
-         | "row" -> let row_num = [|L.build_add (expr builder (List.hd args)) (L.const_int i32_t 1) "" builder|] in
-                    let mat = expr builder v in
-                    let row_ptr = L.build_gep mat row_num "" builder in
-                    L.build_load row_ptr "" builder
-         | "dim" -> let dim = [| L.const_int i32_t 0 |] in
-                    let mat = expr builder v in
-                    let dim_ptr = L.build_gep mat dim "" builder in
-                    L.build_load dim_ptr "" builder
-         | "switchRows" -> 
-                    (match (fst v) with
-                    | A.IntMat -> L.build_call switch_rows_i_func [| expr builder v; expr builder (List.hd args); expr builder (List.nth args 1) |] "switch_rows_i" builder
-                    | A.FltMat -> L.build_call switch_rows_f_func [| expr builder v; expr builder (List.hd args); expr builder (List.nth args 1) |] "switch_rows_f" builder
-                    | _ -> raise (Failure "Expression is not a matrix")
-                    )
-         | "transpose" ->
-                    (match (fst v) with
-                    | A.IntMat -> L.build_call transpose_i_func [| expr builder v |] "transpose_i" builder
-                    | A.FltMat  -> L.build_call transpose_f_func [| expr builder v |] "transpose_f" builder 
-                    | _ -> raise (Failure "not done"))
-         | "spliceRow" ->
-                    (match (fst v) with
-                    | A.IntMat -> L.build_call splice_row_i_func [| expr builder v; expr builder (List.hd args) |] "splice_row_i" builder
-                    | A.FltMat -> L.build_call splice_row_f_func [| expr builder v; expr builder (List.hd args) |] "splice_row_f" builder
-                    | _ -> raise (Failure "fml"))
-         | "spliceColumn" ->
-                    (match (fst v) with
-                    | A.IntMat -> L.build_call splice_col_i_func [| expr builder v; expr builder (List.hd args) |] "splice_col_i" builder
-                    | A.FltMat -> L.build_call splice_col_f_func [| expr builder v; expr builder (List.hd args) |] "splice_col_f" builder
-                    | _ -> raise (Failure "meh"))
-         | "col" ->
-                    (match (fst v) with
-                    | A.IntMat -> L.build_call col_i_func [| expr builder v; expr builder (List.hd args) |] "col_i" builder
-                    | A.FltMat -> L.build_call col_f_func [| expr builder v; expr builder (List.hd args) |] "col_f" builder
-                    | _ -> raise (Failure "meh"))
-         | _ -> raise (Failure "not a standard library function")
- 
+         L.build_free e' builder 
          
     in
     

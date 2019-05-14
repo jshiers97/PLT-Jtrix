@@ -102,7 +102,7 @@ expr:
   | ID LBRACK expr RBRACK ASSIGN expr { ArrSe($1, $3, $6) }
   | ID LBRACK expr RBRACK LBRACK expr RBRACK { MatGe($1, $3, $6) }
   | ID LBRACK expr RBRACK LBRACK expr RBRACK ASSIGN expr { MatSe($1, $3, $6, $9) }
-  | expr DOT ID LPAREN args_opt RPAREN  { StdLib($1, $3, $5) }
+  | expr DOT ID LPAREN args_opt RPAREN  { Call($3, ($1 :: $5)) }
   | NEW INT LBRACK expr RBRACK { InitArr("int", $4) }
   | NEW FLOAT LBRACK expr RBRACK  { InitArr("float", $4) }
   | NEW INTMATRIX LBRACK expr RBRACK LBRACK expr RBRACK { InitMat("int", $4, $7) }
