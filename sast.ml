@@ -16,14 +16,16 @@ and sx =
   | SArrSe of string * sexpr * sexpr
   | SMatGe of string * sexpr * sexpr
   | SMatSe of string * sexpr * sexpr * sexpr
+  | SInitArr of string * sexpr
+  | SInitMat of string * sexpr * sexpr
   | SId of string
   (*creating SCharLit*)
   | SCharLit of char
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
   | SAssign of string * sexpr 
-  | SStdLib of sexpr * string * sexpr list
   | SCall of string * sexpr list
+  | SFree of sexpr
   | SNoexpr
 
 type sstmt =
@@ -62,7 +64,8 @@ let rec string_of_sexpr (t, e) =
   | SFltArrLit(l) -> "[ " ^ (String.concat ", " (List.map string_of_sexpr l)) ^ " }"
   | SArrGe(v, e) -> v ^ "[" ^ (string_of_sexpr e) ^ "]"
   | SArrSe(v, i, e) -> v ^ "[" ^ (string_of_sexpr i) ^ "] = " ^ (string_of_sexpr e) 
-  | SStdLib(v, f, e) -> (string_of_sexpr v) ^ "." ^ f ^ "(" ^ (String.concat ", " (List.map string_of_sexpr e)) ^ "}"
+  | SInitArr(t, e) -> "new " ^ t ^ "[" ^ (string_of_sexpr e) ^ "]"
+  | SInitMat(t, r, c) -> "new Matrix<" ^ t ^ ">[" ^ (string_of_sexpr r) ^ "][" ^ (string_of_sexpr c) ^ "]"
   | SId(s) -> s
   | SBinop(e1, o, e2) ->
       string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
@@ -70,6 +73,7 @@ let rec string_of_sexpr (t, e) =
   | SAssign(v, e) -> v ^ " = " ^ string_of_sexpr e
   | SCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
+  | SFree(e) -> "free(" ^ (string_of_sexpr e) ^ ")"
   | SNoexpr -> ""
 				  ) ^ ")"				     
 

@@ -8,7 +8,8 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT CHAR
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT
+%token FREE CHAR
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL
@@ -26,6 +27,7 @@ open Ast
 %left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
+%nonassoc DOT
 %left PLUS MINUS
 %left TIMES DIVIDE
 %right NOT
@@ -98,16 +100,17 @@ expr:
   | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | STRINGLITERAL    { StrLit($1)             }
+  | LBRACK mat RBRACK { $2    }
   | CHARLITERAL      { CharLit($1)            }
-  | LBRACK arr_opt  RBRACK { ArrLit($2)       }
   | ID LBRACK expr RBRACK {  ArrGe($1, $3)    }
   | ID LBRACK expr RBRACK ASSIGN expr { ArrSe($1, $3, $6) }
-  | LBRACK mat RBRACK { let mat = List.rev $2 in
-                        let arrlit a = ArrLit(a) in
-                        MatLit(List.map arrlit mat)   }
   | ID LBRACK expr RBRACK LBRACK expr RBRACK { MatGe($1, $3, $6) }
   | ID LBRACK expr RBRACK LBRACK expr RBRACK ASSIGN expr { MatSe($1, $3, $6, $9) }
-  | expr DOT ID LPAREN args_opt RPAREN  { StdLib($1, $3, $5) }
+  | expr DOT ID LPAREN args_opt RPAREN  { Call($3, ($1 :: $5)) }
+  | NEW INT LBRACK expr RBRACK { InitArr("int", $4) }
+  | NEW FLOAT LBRACK expr RBRACK  { InitArr("float", $4) }
+  | NEW INTMATRIX LBRACK expr RBRACK LBRACK expr RBRACK { InitMat("int", $4, $7) }
+  | NEW FLTMATRIX LBRACK expr RBRACK LBRACK expr RBRACK { InitMat("float", $4, $7) }
   | ID               { Id($1)                 }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
@@ -121,10 +124,13 @@ expr:
   | expr GEQ    expr { Binop($1, Geq,   $3)   }
   | expr AND    expr { Binop($1, And,   $3)   }
   | expr OR     expr { Binop($1, Or,    $3)   }
+  | expr PLUS PLUS   { Binop($1, Add, Literal(1)) }
+  | expr MINUS MINUS { Binop($1, Sub, Literal(1)) }
   | MINUS expr %prec NOT { Unop(Neg, $2)      }
   | NOT expr         { Unop(Not, $2)          }
   | ID ASSIGN expr   { Assign($1, $3)         }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }
+  | FREE LPAREN expr RPAREN { Free($3)        }
   | LPAREN expr RPAREN { $2                   }
 
 args_opt:
@@ -136,13 +142,19 @@ args_list:
   | args_list COMMA expr { $3 :: $1 }
 
 arr_opt:
-    /* nothing */  { []       }
-  | arr_list { List.rev $1 }
+      { [] }
+  | arr_list  { List.rev $1 }
 
 arr_list:
     expr { [$1] }
   | arr_list COMMA expr { $3 :: $1 }
 
 mat:
-  | LBRACK arr_list RBRACK { [List.rev $2]  }
-  | mat SEMI LBRACK arr_list RBRACK { (List.rev $4) ::  $1 }
+  | arr_opt { ArrLit($1) }
+  | mat_list { let mat = List.rev $1 in
+                        let arrlit a = ArrLit(a) in
+                        MatLit(List.map arrlit mat)  }
+ 
+mat_list:
+  | LBRACK arr_opt RBRACK { [$2] }
+  | mat_list SEMI LBRACK arr_list RBRACK { (List.rev $4) ::  $1 }

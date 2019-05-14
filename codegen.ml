@@ -69,6 +69,16 @@ let translate (globals, functions) =
   let idx_check_func : L.llvalue =
           L.declare_function "idx_check" idx_check_t the_module in
 
+  let init_mat_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| i32_t; i32_t |] in
+  let init_mat_i_func : L.llvalue =
+          L.declare_function "init_mat_i" init_mat_i_t the_module in
+  
+  let init_mat_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| i32_t; i32_t |] in
+  let init_mat_f_func : L.llvalue =
+          L.declare_function "init_mat_f" init_mat_f_t the_module in
+
   let switch_rows_i_t : L.lltype =
           L.var_arg_function_type int_mat_t [| int_mat_t; i32_t; i32_t |] in
   let switch_rows_i_func : L.llvalue =
@@ -78,26 +88,51 @@ let translate (globals, functions) =
           L.var_arg_function_type float_mat_t [| float_mat_t; i32_t; i32_t |] in
   let switch_rows_f_func : L.llvalue =
           L.declare_function "switch_rows_f" switch_rows_f_t the_module in
+ 
+  let transpose_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t |] in
+  let transpose_i_func : L.llvalue =
+          L.declare_function "transpose_i" transpose_i_t the_module in 
+ 
+  let transpose_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t |] in
+  let transpose_f_func : L.llvalue =
+          L.declare_function "transpose_f" transpose_f_t the_module in 
 
-  let printarr_t : L.lltype =
-          L.var_arg_function_type i32_t [| L.pointer_type i32_t |] in
-  let printarr_func : L.llvalue =
-      L.declare_function "printarr" printarr_t the_module in
+  let splice_row_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; i32_t |] in
+  let splice_row_i_func : L.llvalue =
+          L.declare_function "splice_row_i" splice_row_i_t the_module in
 
-  let printfltarr_t : L.lltype =
-          L.var_arg_function_type float_t [| i32_t ; L.pointer_type float_t |] in
-  let printfltarr_func : L.llvalue =
-          L.declare_function "printfltarr" printfltarr_t the_module in
+  let splice_row_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; i32_t |] in
+  let splice_row_f_func : L.llvalue =
+          L.declare_function "splice_row_f" splice_row_f_t the_module in 
+
+  let splice_col_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; i32_t |] in
+  let splice_col_i_func : L.llvalue =
+          L.declare_function "splice_col_i" splice_col_i_t the_module in
+
+  let splice_col_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; i32_t |] in
+  let splice_col_f_func : L.llvalue =
+          L.declare_function "splice_col_f" splice_col_f_t the_module in
+
+  let col_i_t : L.lltype =
+          L.var_arg_function_type int_arr_t [| int_mat_t; i32_t |] in
+  let col_i_func : L.llvalue =
+          L.declare_function "col_i" col_i_t the_module in
+  
+  let col_f_t : L.lltype =
+          L.var_arg_function_type float_arr_t [| float_mat_t; i32_t |] in
+  let col_f_func : L.llvalue =
+          L.declare_function "col_f" col_f_t the_module in 
 
   let printf_t : L.lltype =
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
       L.declare_function "printf" printf_t the_module in
-
-  let printbig_t : L.lltype =
-      L.function_type i32_t [| i32_t |] in
-  let printbig_func : L.llvalue =
-      L.declare_function "printbig" printbig_t the_module in
 
   (* Define each function (arguments and return type) so we can
      call it even before we've created its body *)
@@ -147,17 +182,23 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
-    (* Creates float array *)
-    let create_flt_arr s l =
-        let t = Array.of_list [(L.const_int i32_t 0)] in
-        let ptr = L.build_gep s t "" builder in
-        ignore(L.build_store (L.const_float float_t (float_of_int (List.length l))) ptr builder);
-        for i = 1 to ((List.length l)) do
-            let t = Array.of_list  [(L.const_int i32_t i)] in
-            let ptr = L.build_gep s t "" builder in
-            ignore(L.build_store (L.const_float float_t (List.nth l (i-1))) ptr builder)
-         done;
-         s
+    (* Returns the dimension array stored in matrix *)
+    let get_dim mat =
+              let dim = [| L.const_int i32_t 0 |] in
+              let dim_ptr = L.build_gep mat dim "" builder in
+              L.build_load dim_ptr "" builder
+    in
+
+    (* Returns the row stored in the matrix *)
+    let get_row mat row_num =
+              let row_ptr = L.build_gep mat row_num "" builder in
+              L.build_load row_ptr "" builder
+    in
+
+    (* Returns the size of array *)
+    let get_size arr =
+         let s = L.build_gep arr [| L.const_int i32_t 0 |] "" builder in
+         L.build_load s "" builder
     in
 
     (* Construct code for an expression; return its value *)
@@ -168,7 +209,7 @@ let translate (globals, functions) =
       | SCharLit l -> L.const_int i8_t (int_of_char l)
       | SStrLit l   -> let str_wo_qt = List.nth (String.split_on_char '"' l) 1 in
                        L.build_global_stringptr str_wo_qt str_wo_qt  builder
-      | SIntMatLit (m) -> let s = L.build_array_alloca int_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
+      | SIntMatLit (m) -> let s = L.build_array_malloc int_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
                          for i = 1 to ((List.length m)) do
                             let t = [|L.const_int i32_t i|] in
                             let ptr = L.build_gep s t "" builder in
@@ -190,11 +231,11 @@ let translate (globals, functions) =
 
                         done;
                          let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
-                         ignore(L.build_store dim s builder);
+                         ignore(L.build_store dim dim_ptr builder);
                          s
-      | SFltMatLit (m) ->  let s = L.build_array_alloca float_arr_t (L.const_int i32_t ((List.length m))) "" builder in
+      | SFltMatLit (m) ->  let s = L.build_array_malloc float_arr_t (L.const_int i32_t ((List.length m)+1)) "" builder in
                          for i = 1 to ((List.length m)) do
-                            let t = Array.of_list [L.const_int i32_t (i-1)] in
+                            let t = [|L.const_int i32_t i|] in
                             let ptr = L.build_gep s t "" builder in
                             ignore(L.build_store (expr builder (List.nth m (i - 1))) ptr builder)
                          done;
@@ -204,7 +245,7 @@ let translate (globals, functions) =
                             let ptr = L.build_gep dim t "" builder in
                             if i = 0 then
                             ignore(L.build_store (L.const_float float_t 2.0) ptr builder)
-                            else if i = 1 then ignore(L.build_store (L.const_float float_t (float_of_int (List.length m))) ptr builder)
+                            else if i = 1 then ignore(L.build_store (L.const_float float_t (float_of_int(List.length m))) ptr builder)
                             else
                                  let eval (_, e) = match e with
                                  | SFltArrLit l -> float_of_int (List.length l)
@@ -214,24 +255,52 @@ let translate (globals, functions) =
 
                         done;
                          let dim_ptr = L.build_gep s [|L.const_int i32_t 0|] "" builder in
-                         ignore(L.build_store dim s builder);
+                         ignore(L.build_store dim dim_ptr builder);
                          s
-      | SMatGe (v, r, c) -> let row_num = Array.of_list [L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder] in
-                            let col_num = Array.of_list [L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder] in
+      | SMatGe (v, r, c) -> let r_n = L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder in
+                            let c_n = L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder in
+                            let row_num = [| r_n |] in
+                            let col_num = [| c_n |] in
                             let mat = L.build_load (lookup v) "" builder in
+                            let dim = L.build_gep mat [| L.const_int i32_t 0 |] "" builder in
+                            let dim_arr = L.build_load dim "" builder in
+                            let r_size = L.build_gep dim_arr [| L.const_int i32_t 1|] "" builder in
+                            let c_size = L.build_gep dim_arr [| L.const_int i32_t 2|] "" builder  in
+                            if ((L.type_of (lookup v)) = int_mat_t) then (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_load r_size "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_load c_size "" builder |] "" builder);
+                            )
+                            else (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_fptosi (L.build_load r_size "" builder) i32_t "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_fptosi (L.build_load c_size "" builder) i32_t "" builder |] "" builder);
+                            );
                             let row_ptr = L.build_gep mat row_num "" builder in
                             let row = L.build_load row_ptr "" builder in
                             let col_ptr = L.build_gep row col_num "" builder in
                             L.build_load col_ptr "" builder
-      | SMatSe (v, r, c, (ty, e)) -> let row_num = Array.of_list [(expr builder r)] in
-                            let col_num = Array.of_list [L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder] in
+      | SMatSe (v, r, c, (ty, e)) -> let r_n = L.build_add (expr builder r) (L.const_int i32_t 1) "row" builder in
+                            let c_n = L.build_add (expr builder c) (L.const_int i32_t 1) "idx" builder in
+                            let row_num = [| r_n |] in
+                            let col_num = [| c_n |] in
                             let mat = L.build_load (lookup v) "" builder in
+                            let dim = L.build_gep mat [| L.const_int i32_t 0 |] "" builder in
+                            let dim_arr = L.build_load dim "" builder in
+                            let r_size = L.build_gep dim_arr [| L.const_int i32_t 1|] "" builder in
+                            let c_size = L.build_gep dim_arr [| L.const_int i32_t 2|] "" builder  in
+                            if ((L.type_of (lookup v)) = int_mat_t) then (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_load r_size "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_load c_size "" builder |] "" builder);
+                            )
+                            else (
+                            ignore(L.build_call idx_check_func [| r_n; L.build_fptosi (L.build_load r_size "" builder) i32_t "" builder |] "" builder);
+                            ignore(L.build_call idx_check_func [| c_n; L.build_fptosi (L.build_load c_size "" builder) i32_t "" builder |] "" builder);
+                            );
                             let row_ptr = L.build_gep mat row_num "" builder in
                             let row = L.build_load row_ptr "" builder in
                             let col_ptr = L.build_gep row col_num "" builder in
                             let typ_e = expr builder (ty, e) in
                             L.build_store (typ_e) col_ptr builder
-     | SIntArrLit (a) -> let s = L.build_array_alloca i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
+     | SIntArrLit (a) -> let s = L.build_array_malloc i32_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                          let t = Array.of_list [(L.const_int i32_t 0)] in
                          let ptr = L.build_gep s t "" builder in
                          ignore(L.build_store (L.const_int i32_t (List.length a)) ptr builder);
@@ -241,7 +310,7 @@ let translate (globals, functions) =
                             ignore(L.build_store (expr builder (List.nth a (i - 1))) ptr builder)
                          done;
                          s
-      | SFltArrLit (a) -> let s = L.build_array_alloca float_t (L.const_int i32_t ((List.length a)+1)) "" builder in
+      | SFltArrLit (a) -> let s = L.build_array_malloc float_t (L.const_int i32_t ((List.length a)+1)) "" builder in
                          let t = Array.of_list [(L.const_int i32_t 0)] in
                          let ptr = L.build_gep s t "" builder in
                          ignore(L.build_store (L.const_float float_t (float_of_int (List.length a))) ptr builder);
@@ -253,20 +322,51 @@ let translate (globals, functions) =
                          s
       | SArrGe(v, e) -> let arr = L.build_load (lookup v) v builder in
                         let idx = L.build_add (expr builder e) (L.const_int i32_t 1) "" builder in
-                        let size_ptr = L.build_gep arr (Array.of_list[L.const_int i32_t 0]) "" builder in
+                        let size_ptr = L.build_gep arr [|L.const_int i32_t 0|] "" builder in
                         let size = L.build_load size_ptr "" builder in
-                        ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                        if(L.type_of (lookup v) = int_arr_t) then (
+                               ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                        )
+                        else (
+                                ignore(L.build_call idx_check_func [| idx; L.build_fptosi size i32_t "" builder |] "" builder);
+                        );
                         let t = [|idx|] in
                         let ptr = L.build_gep arr t "" builder in
                         L.build_load ptr "" builder
       | SArrSe(v, i, e) -> let arr = L.build_load (lookup v) v builder in
                            let idx = L.build_add (expr builder i) (L.const_int i32_t 1) "idx" builder in
                            let size_ptr = L.build_gep arr (Array.of_list[L.const_int i32_t 0]) "" builder in
-                        let size = L.build_load size_ptr "" builder in
-                        ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                           let size = L.build_load size_ptr "" builder in
+                           if(L.type_of (lookup v) = int_arr_t) then (
+                              ignore(L.build_call idx_check_func [| idx; size |] "" builder);
+                           )
+                           else (
+                              ignore(L.build_call idx_check_func [| idx; L.build_fptosi size i32_t "" builder |] "" builder);
+                           ); 
                            let t = Array.of_list [idx] in
                            let ptr = L.build_gep arr t "" builder in
                            L.build_store (expr builder e) ptr builder
+      | SInitArr(t, e) -> let e' = expr builder e in
+                          (match t with
+                          | "int" -> let s = L.build_array_malloc i32_t e' "" builder in
+                                     let t = L.build_gep s [|L.const_int i32_t 0|] "" builder in
+                                     ignore(L.build_call idx_check_func [| e'; e' |] "" builder);
+                                     ignore(L.build_store e' t  builder);
+                                     s
+                          | "float" -> let cast = L.build_sitofp e' float_t "" builder in
+                                       let s = L.build_array_malloc float_t e' "" builder in
+                                       let t = L.build_gep s [|L.const_int i32_t 0|] "" builder in
+                                       ignore(L.build_call idx_check_func [| e'; e' |] "" builder);
+                                       ignore(L.build_store cast t builder);
+                                       s
+                          | _ -> raise (Failure "Invalid array type")
+                          )                    
+      | SInitMat(t, r, c) -> let r' = expr builder r and c' = expr builder c in
+                             (match t with
+                             | "int" -> L.build_call init_mat_i_func [| r'; c'|] "init_mat_i" builder
+                             | "float" -> L.build_call init_mat_f_func [| r'; c' |] "init_mat_f" builder
+                             | _ -> raise (Failure "Invalid matrix type")
+                             )
       | SNoexpr     -> L.const_int i32_t 0
       | SId s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in
@@ -314,41 +414,61 @@ let translate (globals, functions) =
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
-      | SCall ("printbig", [e]) ->
-	  L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | SCall ("printf", [e]) ->
 	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
 	    "printf" builder
       | SCall ("println", [e]) ->
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
-      | SCall ("printarr", [e]) ->
-              L.build_call printarr_func [| (expr builder e) |] "printarr" builder
-      | SCall (f, args) ->
+      | SCall ("transpose_i", [e]) ->
+              L.build_call transpose_i_func [| expr builder e |] "tranpose_i" builder
+      | SCall ("transpose_f", [e]) ->
+              L.build_call transpose_f_func [| expr builder e |] "transpose_f" builder
+      | SCall ("row_i", [m;r]) ->
+              let row_num = [|L.build_add (expr builder r) (L.const_int i32_t 1) "" builder|] in
+              let mat = expr builder m in
+              get_row mat row_num
+      | SCall ("row_f", [m;r]) ->
+              let row_num = [|L.build_add (expr builder r) (L.const_int i32_t 1) "" builder|] in
+              let mat = expr builder m in
+              get_row mat row_num
+      | SCall ("dim_i", [m]) ->
+              let mat = expr builder m in
+              get_dim mat
+      | SCall ("dim_f", [m]) ->
+              let mat = expr builder m in
+              get_dim mat
+      | SCall ("col_i", [m;c]) ->
+              L.build_call col_i_func [| expr builder m; expr builder c |] "col_i" builder
+      | SCall ("col_f", [m;c]) ->
+              L.build_call col_f_func [| expr builder m; expr builder c |] "col_f" builder
+      | SCall ("spliceRow_i", [m;r]) ->
+              L.build_call splice_row_i_func [| expr builder m; expr builder r |] "splice_row_i" builder
+      | SCall ("spliceRow_f", [m;r]) ->
+              L.build_call splice_row_f_func [| expr builder m; expr builder r |] "splice_row_f" builder
+      | SCall ("spliceColumn_i", [m;r]) ->
+              L.build_call splice_col_i_func [| expr builder m; expr builder r |] "splice_col_i" builder
+      | SCall ("spliceColumn_f", [m;r]) ->
+              L.build_call splice_col_f_func [| expr builder m; expr builder r |] "splice_col_f" builder
+      | SCall ("switchRows_i", [m;r1;r2]) ->
+              L.build_call switch_rows_i_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_i" builder
+      | SCall ("switchRows_f", [m;r1;r2]) ->
+              L.build_call switch_rows_f_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_f" builder
+      | SCall ("size_i", [a]) -> 
+         let a' = expr builder a in
+         get_size a'
+      | SCall ("size_f", [a]) ->
+         let a' = expr builder a in
+         L.build_fptosi (get_size a') i32_t "" builder
+      | SCall (f, args) ->             
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
 	 let result = (match fdecl.styp with
                         A.Void -> ""
                       | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list llargs) result builder
-      | SStdLib (v, f, args) ->
-         match f with
-         | "row" -> let row_num = [|L.build_add (expr builder (List.hd args)) (L.const_int i32_t 1) "" builder|] in
-                    let mat = expr builder v in
-                    let row_ptr = L.build_gep mat row_num "" builder in
-                    L.build_load row_ptr "" builder
-         | "dim" -> let dim = [| L.const_int i32_t 0 |] in
-                    let mat = expr builder v in
-                    let dim_ptr = L.build_gep mat dim "" builder in
-                    L.build_load dim_ptr "" builder
-         | "switchRows" ->
-                    (match (fst v) with
-                    | A.IntMat -> L.build_call switch_rows_i_func [| expr builder v; expr builder (List.hd args); expr builder (List.nth args 1) |] "switch_rows_i" builder
-                    | A.FltMat -> L.build_call switch_rows_f_func [| expr builder v; expr builder (List.hd args); expr builder (List.nth args 1) |] "switch_rows_f" builder
-                    | _ -> raise (Failure "Expression is not a matrix")
-                    )
-         | _ -> raise (Failure "not implemented")
-
-
+      | SFree(e) -> 
+         let e' = expr builder e in
+         L.build_free e' builder 
     in
 
     (* LLVM insists each basic block end with exactly one "terminator"

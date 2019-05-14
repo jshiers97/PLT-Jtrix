@@ -61,6 +61,7 @@ rule token = parse
 | "Matrix<int>" { INTMATRIX }
 | "Matrix<float>" { FLTMATRIX }
 | "new" { NEW }
+| "free" { FREE }
 | digits as lxm { LITERAL(int_of_string lxm) }
 | flt  as lxm { FLIT(lxm) }
 (*trying to do char literals *)
