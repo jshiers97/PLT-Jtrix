@@ -1,0 +1,4 @@
+void main() {
+    int i;
+    free(i); /* cannot free data on stack */
+}

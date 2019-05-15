@@ -1,0 +1,5 @@
+void main() {
+    Matrix<int> a;
+    a = new Matrix<float>[10][10];
+    free(a);
+}
