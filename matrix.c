@@ -3,7 +3,6 @@
 #include <assert.h>
 
 void idx_check(int idx, int size) {
-	printf("idx: %d, size: %d\n", idx, size);
 	if(idx < 0) {
 		printf("Fatal error: exception Failure(\"Index must be greater than 0\")");
 		exit(1);

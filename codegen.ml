@@ -410,7 +410,7 @@ let translate (globals, functions) =
 	  (match op with
 	    A.Add     -> L.build_fadd
 	  | A.Sub     -> L.build_fsub
-	  | A.Mult    -> L.build_fmul
+          | A.Mult    -> L.build_fmul
 	  | A.Div     -> L.build_fdiv
 	  | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
 	  | A.Neq     -> L.build_fcmp L.Fcmp.One
@@ -418,7 +418,7 @@ let translate (globals, functions) =
 	  | A.Leq     -> L.build_fcmp L.Fcmp.Ole
 	  | A.Greater -> L.build_fcmp L.Fcmp.Ogt
 	  | A.Geq     -> L.build_fcmp L.Fcmp.Oge
-	  | A.And | A.Or ->
+	  | A.And | A.Or | A.Mod ->
 	      raise (Failure "internal error: semant should have rejected and/or on float")
 	  ) e1' e2' "tmp" builder
       | SBinop ((A.IntMat, _) as e1, op, e2) ->
@@ -444,6 +444,7 @@ let translate (globals, functions) =
 	    A.Add     -> L.build_add
 	  | A.Sub     -> L.build_sub
 	  | A.Mult    -> L.build_mul
+          | A.Mod     -> L.build_srem
           | A.Div     -> L.build_sdiv
 	  | A.And     -> L.build_and
 	  | A.Or      -> L.build_or

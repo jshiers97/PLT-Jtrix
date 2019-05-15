@@ -242,7 +242,7 @@ let check (globals, functions) =
           let same = t1 = t2 in
           (* Determine expression type based on operator and operand types *)
           let ty = match op with
-            Add | Sub | Mult | Div when same && t1 = Int   -> Int
+            Add | Sub | Mult | Div | Mod when same && t1 = Int   -> Int
           | Add | Sub | Mult | Div when same && t1 = Float -> Float
           | Add | Sub | Mult       when same && t1 = IntMat -> IntMat
           | Add | Sub | Mult       when same && t1 = FltMat -> FltMat

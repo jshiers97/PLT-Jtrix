@@ -1,4 +1,4 @@
-/* Ocamlyacc parser for MicroC */
+/* Ocamlyacc parser for Jtrix */
 
 %{
 
@@ -9,7 +9,7 @@ open Ast
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR INTARR FLTARR INTMATRIX FLTMATRIX NEW
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID STRING LBRACK RBRACK DOT
-%token FREE CHAR
+%token FREE CHAR MOD
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT STRINGLITERAL
@@ -28,6 +28,7 @@ open Ast
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %nonassoc DOT
+%right MOD
 %left PLUS MINUS
 %left TIMES DIVIDE
 %right NOT
@@ -124,6 +125,7 @@ expr:
   | expr GEQ    expr { Binop($1, Geq,   $3)   }
   | expr AND    expr { Binop($1, And,   $3)   }
   | expr OR     expr { Binop($1, Or,    $3)   }
+  | expr MOD expr    { Binop($1, Mod, $3)     }
   | expr PLUS PLUS   { Binop($1, Add, Literal(1)) }
   | expr MINUS MINUS { Binop($1, Sub, Literal(1)) }
   | MINUS expr %prec NOT { Unop(Neg, $2)      }

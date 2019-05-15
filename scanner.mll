@@ -18,7 +18,8 @@ let var = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf } (* Whitespace *)
-| "/*"     { comment lexbuf }           (* Comments *)
+| "/*"     { comment lexbuf } (* Comments *)
+| "//"     { in_line_comment lexbuf }
 | '('      { LPAREN }
 | ')'      { RPAREN }
 | '{'      { LBRACE }
@@ -31,6 +32,7 @@ rule token = parse
 | '+'      { PLUS }
 | '-'      { MINUS }
 | '*'      { TIMES }
+| '%'      { MOD }
 | '/'      { DIVIDE }
 | '='      { ASSIGN }
 | "=="     { EQ }
@@ -64,7 +66,6 @@ rule token = parse
 | "free" { FREE }
 | digits as lxm { LITERAL(int_of_string lxm) }
 | flt  as lxm { FLIT(lxm) }
-(*trying to do char literals *)
 | '\'' (['a'-'z' 'A'-'Z'] as lit) '\'' {CHARLITERAL(lit) }
 | var  as lxm { ID(lxm) }
 | eof { EOF }
@@ -73,3 +74,7 @@ rule token = parse
 and comment = parse
   "*/" { token lexbuf }
 | _    { comment lexbuf }
+
+and in_line_comment = parse
+  ['\n' '\r'] { token lexbuf }
+| _           { in_line_comment lexbuf }
