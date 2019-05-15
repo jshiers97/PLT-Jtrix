@@ -1,0 +1,6 @@
+int main(){
+	char c;
+	c='c';
+	print(c); /* wrong print function!*/
+	return 0;
+}
