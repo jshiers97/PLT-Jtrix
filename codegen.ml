@@ -128,7 +128,7 @@ let translate (globals, functions) =
           L.var_arg_function_type float_arr_t [| float_mat_t; i32_t |] in
   let col_f_func : L.llvalue =
           L.declare_function "col_f" col_f_t the_module in
-
+(*
   let f_to_in_t : L.lltype =
           L.function_type float_t [| i32_t |] in
   let f_to_int_func : L.llvalue =
@@ -138,7 +138,7 @@ let translate (globals, functions) =
           L.function_type float_t [| i32_t |] in
   let int_to_f_func : L.llvalue =
           L.declare_function "int_to_f" int_to_f_t the_module in 
-
+*)
   let printf_t : L.lltype =
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
