@@ -1,9 +1,0 @@
-void main() {
-    int[] a;
-    int i;
-    a = [100, 200, 300];
-
-    for(i=0; i < a.size(); i++) {
-        print(a[i]);
-    }
-}

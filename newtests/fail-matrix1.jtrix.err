@@ -1,1 +1,0 @@
-Fatal error: exception Failure("illegal assignment intmat = fltmat in a = new Matrix<float>[10][10]")
