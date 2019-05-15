@@ -2,7 +2,7 @@
 
 {
 
-open Microcparse
+open Parse
 
 let list_of_string f l =
         let sep_arr = List.map String.trim (String.split_on_char ',' l) in

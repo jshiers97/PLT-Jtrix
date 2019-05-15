@@ -41,7 +41,7 @@ let translate (globals, functions) =
   and float_mat_t = L.pointer_type float_arr_t
   in
 
-  (* Return the LLVM type for a MicroC type *)
+  (* Return the LLVM type for a Jtrix type *)
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
@@ -95,7 +95,7 @@ let translate (globals, functions) =
           L.var_arg_function_type int_mat_t [| i32_t; i32_t |] in
   let init_mat_i_func : L.llvalue =
           L.declare_function "init_mat_i" init_mat_i_t the_module in
-  
+
   let init_mat_f_t : L.lltype =
           L.var_arg_function_type float_mat_t [| i32_t; i32_t |] in
   let init_mat_f_func : L.llvalue =
@@ -110,16 +110,16 @@ let translate (globals, functions) =
           L.var_arg_function_type float_mat_t [| float_mat_t; i32_t; i32_t |] in
   let switch_rows_f_func : L.llvalue =
           L.declare_function "switch_rows_f" switch_rows_f_t the_module in
- 
+
   let transpose_i_t : L.lltype =
           L.var_arg_function_type int_mat_t [| int_mat_t |] in
   let transpose_i_func : L.llvalue =
-          L.declare_function "transpose_i" transpose_i_t the_module in 
- 
+          L.declare_function "transpose_i" transpose_i_t the_module in
+
   let transpose_f_t : L.lltype =
           L.var_arg_function_type float_mat_t [| float_mat_t |] in
   let transpose_f_func : L.llvalue =
-          L.declare_function "transpose_f" transpose_f_t the_module in 
+          L.declare_function "transpose_f" transpose_f_t the_module in
 
   let splice_row_i_t : L.lltype =
           L.var_arg_function_type int_mat_t [| int_mat_t; i32_t |] in
@@ -129,7 +129,7 @@ let translate (globals, functions) =
   let splice_row_f_t : L.lltype =
           L.var_arg_function_type float_mat_t [| float_mat_t; i32_t |] in
   let splice_row_f_func : L.llvalue =
-          L.declare_function "splice_row_f" splice_row_f_t the_module in 
+          L.declare_function "splice_row_f" splice_row_f_t the_module in
 
   let splice_col_i_t : L.lltype =
           L.var_arg_function_type int_mat_t [| int_mat_t; i32_t |] in
@@ -145,12 +145,22 @@ let translate (globals, functions) =
           L.var_arg_function_type int_arr_t [| int_mat_t; i32_t |] in
   let col_i_func : L.llvalue =
           L.declare_function "col_i" col_i_t the_module in
-  
+
   let col_f_t : L.lltype =
           L.var_arg_function_type float_arr_t [| float_mat_t; i32_t |] in
   let col_f_func : L.llvalue =
-          L.declare_function "col_f" col_f_t the_module in 
+          L.declare_function "col_f" col_f_t the_module in
+(*
+  let f_to_int_t : L.lltype =
+          L.function_type float_t [| i32_t |] in
+  let f_to_int_func : L.llvalue =
+          L.declare_function "f_to_int" f_to_in_t the_module in
 
+  let int_to_f_t : L.lltype =
+          L.function_type float_t [| i32_t |] in
+  let int_to_f_func : L.llvalue =
+          L.declare_function "int_to_f" int_to_f_t the_module in
+*)
   let printf_t : L.lltype =
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
@@ -173,7 +183,8 @@ let translate (globals, functions) =
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
-    and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder
+    and char_format_str = L.build_global_stringptr "%c\n" "fmt" builder
+    and float_format_str = L.build_global_stringptr "%.3f\n" "fmt" builder
     and new_line = L.build_global_stringptr "%s\n" "fmt" builder in
 
     (* Construct the function's "locals": formal arguments and locally
@@ -364,7 +375,7 @@ let translate (globals, functions) =
                            )
                            else (
                               ignore(L.build_call idx_check_func [| idx; L.build_fptosi size i32_t "" builder |] "" builder);
-                           ); 
+                           );
                            let t = Array.of_list [idx] in
                            let ptr = L.build_gep arr t "" builder in
                            L.build_store (expr builder e) ptr builder
@@ -382,7 +393,7 @@ let translate (globals, functions) =
                                        ignore(L.build_store cast t builder);
                                        s
                           | _ -> raise (Failure "Invalid array type")
-                          )                    
+                          )
       | SInitMat(t, r, c) -> let r' = expr builder r and c' = expr builder c in
                              (match t with
                              | "int" -> L.build_call init_mat_i_func [| r'; c'|] "init_mat_i" builder
@@ -450,11 +461,11 @@ let translate (globals, functions) =
 	  | A.Neg                  -> L.build_neg
           | A.Not                  -> L.build_not) e' "tmp" builder
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
-	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
-	    "printf" builder
+	            L.build_call printf_func [| int_format_str ; (expr builder e) |] "printf" builder
+      | SCall ("printc", [e]) ->
+	            L.build_call printf_func [| char_format_str ; (expr builder e) |] "printf" builder
       | SCall ("printf", [e]) ->
-	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
-	    "printf" builder
+	            L.build_call printf_func [| float_format_str ; (expr builder e) |] "printf" builder
       | SCall ("println", [e]) ->
                       L.build_call printf_func [| new_line ; (expr builder e) |] "printf" builder
       | SCall ("transpose_i", [e]) ->
@@ -491,22 +502,26 @@ let translate (globals, functions) =
               L.build_call switch_rows_i_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_i" builder
       | SCall ("switchRows_f", [m;r1;r2]) ->
               L.build_call switch_rows_f_func [| expr builder m; expr builder r1; expr builder r2 |] "switch_rows_f" builder
-      | SCall ("size_i", [a]) -> 
+      | SCall ("size_i", [a]) ->
          let a' = expr builder a in
          get_size a'
       | SCall ("size_f", [a]) ->
          let a' = expr builder a in
          L.build_fptosi (get_size a') i32_t "" builder
-      | SCall (f, args) ->             
+      | SCall ("f_to_int", [e]) ->
+         L.build_fptosi (expr builder e) i32_t "int_from" builder
+      | SCall ("int_to_f", [e]) ->
+         L.build_sitofp (expr builder e) float_t "float_from" builder
+      | SCall (f, args) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
 	 let result = (match fdecl.styp with
                         A.Void -> ""
                       | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list llargs) result builder
-      | SFree(e) -> 
+      | SFree(e) ->
          let e' = expr builder e in
-         L.build_free e' builder 
+         L.build_free e' builder
     in
 
     (* LLVM insists each basic block end with exactly one "terminator"
