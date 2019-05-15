@@ -1,0 +1,5 @@
+void main() {
+    float[] a;
+    a = new float[10];
+    a[11.]; /* index cannot be a float */
+}
