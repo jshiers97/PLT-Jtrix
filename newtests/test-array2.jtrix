@@ -1,0 +1,11 @@
+void main() {
+    float[] a;
+    int i;
+    a = new float[10];
+
+    for(i = 0; i < a.size(); i = i++) {
+        a[i] = 1.5;
+        print(a[i]);
+    }
+
+}
