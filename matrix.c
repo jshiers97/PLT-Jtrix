@@ -3,6 +3,7 @@
 #include <assert.h>
 
 void idx_check(int idx, int size) {
+	printf("idx: %d, size: %d\n", idx, size);
 	if(idx < 0) {
 		printf("Fatal error: exception Failure(\"Index must be greater than 0\")");
 		exit(1);
@@ -12,17 +13,92 @@ void idx_check(int idx, int size) {
 	}
 }
 
-int** init_mat_i(int r, int c) {
-	int** x = (int **)malloc(sizeof(int*)*(r + 1));
-	assert(x != NULL);
-
+int* create_dim_i(int r, int c) {
 	int* dim = (int*)malloc(sizeof(int)*3);
 	assert(dim != NULL);
+
 	dim[0] = 2;
 	dim[1] = r;
 	dim[2] = c;
 
-	x[0] = dim;
+	return dim;
+}
+
+double* create_dim_f(double r, double c) {
+	double* dim = (double*)malloc(sizeof(double)*3);
+	assert(dim != NULL);
+
+	dim[0] = 2;
+	dim[1] = r;
+	dim[2] = c;
+
+	return dim;
+}
+
+
+int** op_i(int** e1, int** e2, int op) {
+	if(e1[0][1] != e2[0][1] && e1[0][2] != e2[0][2]) {
+		printf("Fatal error: exception Failure(\"Matrices must have same dimensions\")");
+		exit(1);
+	}
+
+	int** x = (int**)malloc(sizeof(int*)*(e1[0][1]+1));
+	assert(x != NULL);
+ 
+	x[0] = create_dim_i(e1[0][1], e1[0][2]);
+
+	for(int i = 1; i < e1[0][1] + 1; i++) {
+		int* t = (int*)malloc(sizeof(int)*(e1[0][2]+1));
+		assert(t != NULL);
+
+		t[0] = e1[i][0];
+		for(int j = 1; j < e1[0][2] + 1; j++) {
+			if(op == 0) {
+				t[j] = e1[i][j] - e2[i][j];
+			} else {
+				t[j] = e1[i][j] + e2[i][j];
+			}
+		}
+		x[i] = t;
+	}
+
+	return x;
+}
+
+double** op_f(double** e1, double** e2, int op) {
+	if(e1[0][1] != e2[0][1] && e1[0][2] != e2[0][2]) {
+		printf("Fatal error: exception Failure(\"Matrices must have same dimensions\")");
+		exit(1);
+	}
+
+	double** x = (double**)malloc(sizeof(double*)*(((int)e1[0][1])+1));
+	assert(x != NULL);
+ 
+	x[0] = create_dim_f(e1[0][1], e1[0][2]);
+
+	for(int i = 1; i < ((int) e1[0][1]) + 1; i++) {
+		double* t = (double*)malloc(sizeof(double)*(e1[0][2]+1));
+		assert(t != NULL);
+
+		t[0] = e1[i][0];
+		for(int j = 1; j < ((int) e1[0][2]) + 1; j++) {
+			if(op == 0) {
+				t[j] = e1[i][j] - e2[i][j];
+			} else {
+				t[j] = e1[i][j] + e2[i][j];
+			}
+		}
+		x[i] = t;
+	}
+
+	return x;
+}
+
+int** init_mat_i(int r, int c) {
+	int** x = (int **)malloc(sizeof(int*)*(r + 1));
+	assert(x != NULL);
+
+	x[0] = create_dim_i(r, c);
 
 	for(int i = 1; i < r + 1; i++) {
 		int* t = (int *)malloc(sizeof(int)*(c+1));
@@ -36,13 +112,7 @@ double** init_mat_f(int r, int c) {
 	double** x = (double**)malloc(sizeof(double*)*(r+1));
 	assert(x != NULL);
 
-	double* dim = (double*)malloc(sizeof(double)*3);
-	assert(dim != NULL);
-	dim[0] = 2.;
-	dim[1] = (double) r;
-	dim[2] = (double) c;
-
-	x[0] = dim;
+	x[0] = create_dim_f(r, c);
 
 	for(int i = 1; i < r + 1; i++) {
 		double* t = (double *)malloc(sizeof(double)*(c+1));
@@ -63,7 +133,6 @@ int* col_i(int** mat, int c) {
 
 	for(int i=1; i < mat[0][1] + 1; i++) {
 		x[i] = mat[i][c + 1];
-		printf("x[%d] = %d\n", i, x[i]);
 	}
 
 	return x;
@@ -90,12 +159,7 @@ double** splice_col_f(double** old, int c) {
 	double** x = (double**)malloc(sizeof(int*)*(old[0][1]+1));
 	assert(x != NULL);
 
-	double* dim = (double*)malloc(sizeof(double)*3);
-	dim[0] = 2;
-	dim[1] = old[0][1];
-	dim[2] = old[0][2] - 1;
-
-	x[0] = dim;
+	x[0] = create_dim_f(old[0][1], old[0][2]-1);
 
 	for(int i = 1; i < old[0][1] + 1; i++) {
 		double* t = (double*)malloc(sizeof(double)*(old[0][2]));
@@ -130,12 +194,7 @@ int** splice_col_i(int** old, int c) {
 	int** x = (int**)malloc(sizeof(int*)*(old[0][1]+1));
 	assert(x != NULL);
 
-	int* dim = (int*)malloc(sizeof(int)*3);
-	dim[0] = 2;
-	dim[1] = old[0][1];
-	dim[2] = old[0][2] - 1;
-
-	x[0] = dim;
+	x[0] = create_dim_i(old[0][1], old[0][2] - 1);
 
 	for(int i = 1; i < old[0][1] + 1; i++) {
 		int* t = (int*)malloc(sizeof(int)*(old[0][2]));
@@ -215,16 +274,18 @@ double** splice_row_f(double** old, int r) {
 }
 
 int** transpose_i(int** old) {
-	int i = 0;
+	int i = 1;
 
 	int** x = (int **)malloc(sizeof(int*)*(old[0][2]+1));
 	assert(x != NULL);
 
+	x[0] = create_dim_i(old[0][2], old[0][1]);
 
 	for(; i < old[0][1] + 1; i++) {
 		int* t = (int *)malloc(sizeof(int) * (old[0][2] + 1));
 		assert(t != NULL);
-		for(int j = 0; j < old[0][2] + 1; j++) {
+		t[0] = old[0][1];
+		for(int j = 1; j < old[0][2] + 1; j++) {
 			t[j] = old[j][i];
 		}
 		x[i] = t;
@@ -234,14 +295,16 @@ int** transpose_i(int** old) {
 }
 
 double** transpose_f(double** old) {
-	int i = 0;
+	int i = 1;
 	double** x = (double**)malloc(sizeof(double*)*(old[0][2]+1));
 	assert(x != NULL);
 
+	x[0] = create_dim_f(old[0][2], old[0][1]);
 	for(; i < ((int) old[0][1]) + 1; i++) {
 		double* t = (double *)malloc(sizeof(double)*(((int) old[0][2])+1));
 		assert(t != NULL);
-		for(int j = 0; j < ((int) old[0][2]) + 1; j++) {
+		t[0] = old[0][1];
+		for(int j = 1; j < ((int) old[0][2]) + 1; j++) {
 			t[j] = old[j][i];
 		}
 		x[i] = t;
@@ -276,4 +339,64 @@ double** switch_rows_f(double** mat, int x, int y) {
 	}
 
 	return mat;
+}
+
+int** mult_i(int** e1, int** e2) {
+	if(e1[0][2] != e2[0][1]) {
+		printf("Fatal error: exception Failure(\"Wrong size for matrix multiplication\")");
+		exit(1);
+	}
+
+	int** x = (int**)malloc(sizeof(int*)*(e1[0][1]+1));
+	assert(x != NULL);
+
+	x[0] = create_dim_i(e1[0][1], e2[0][2]);
+
+	for(int i = 1; i < e1[0][1] + 1; i++) {
+		int* t = (int *)malloc(sizeof(int)*(e2[0][2]+1));
+		assert(t != NULL);
+		t[0] = e2[0][2];
+		for(int j = 1; j < e2[0][2] + 1; j++) {
+			
+			int sum = 0;
+			int* col = col_i(e2, j - 1);
+			for(int a = 1; a < e1[0][2] + 1; a++) {
+				sum += e1[i][a] * col[a];
+			}	
+			t[j] = sum;
+		}
+		x[i] = t;
+	}
+
+	return x;
+}
+
+double** mult_f(double** e1, double** e2) {
+	if(e1[0][2] != e2[0][1]) {
+		printf("Fatal error: exception Failure(\"Wrong size for matrix multiplication\")");
+		exit(1);
+	}
+
+	double** x = (double**)malloc(sizeof(double*)*(((int)e1[0][1])+1));
+	assert(x != NULL);
+
+	x[0] = create_dim_f(e1[0][1], e2[0][2]);
+
+	for(int i = 1; i < ((int) e1[0][1]) + 1; i++) {
+		double* t = (double *)malloc(sizeof(double)*(((int) e2[0][2])+1));
+		assert(t != NULL);
+		t[0] = e2[0][2];
+		for(int j = 1; j < ((int) e2[0][2]) + 1; j++) {
+			
+			double sum = 0.;
+			double* col = col_f(e2, j - 1);
+			for(int a = 1; a < ((int) e1[0][2]) + 1; a++) {
+				sum += e1[i][a] * col[a];
+			}	
+			t[j] = sum;
+		}
+		x[i] = t;
+	}
+
+	return x;
 }

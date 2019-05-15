@@ -64,6 +64,28 @@ let translate (globals, functions) =
         | _ -> L.const_int (ltype_of_typ t) 0
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
+  
+  
+  let mult_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; int_mat_t |] in
+  let mult_i_func : L.llvalue =
+          L.declare_function "mult_i" mult_i_t the_module in
+  
+  let mult_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; float_mat_t |] in
+  let mult_f_func : L.llvalue =
+          L.declare_function "mult_f" mult_f_t the_module in
+
+  let op_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; int_mat_t; i32_t |] in
+  let op_i_func : L.llvalue =
+          L.declare_function "op_i" op_i_t the_module in
+  
+  let op_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; float_mat_t; i32_t |] in
+  let op_f_func : L.llvalue =
+          L.declare_function "op_f" op_f_t the_module in
+  
   let idx_check_t : L.lltype =
           L.var_arg_function_type void_t [| i32_t ; i32_t |] in
   let idx_check_func : L.llvalue =
@@ -399,6 +421,22 @@ let translate (globals, functions) =
 	  | A.And | A.Or ->
 	      raise (Failure "internal error: semant should have rejected and/or on float")
 	  ) e1' e2' "tmp" builder
+      | SBinop ((A.IntMat, _) as e1, op, e2) ->
+          let e1' = expr builder e1 and e2' = expr builder e2 in
+          (match op with
+          | A.Add -> L.build_call op_i_func [| e1' ; e2'; L.const_int i32_t 1 |] "op_i" builder
+          | A.Sub -> L.build_call op_i_func [| e1' ; e2'; L.const_int i32_t 0 |] "op_i" builder
+          | A.Mult -> L.build_call mult_i_func [| e1'; e2'|] "mult_i" builder
+          | _ -> raise (Failure "interal error")
+          )
+      | SBinop ((A.FltMat, _) as e1, op, e2) ->
+          let e1' = expr builder e1 and e2' = expr builder e2 in
+          (match op with
+          | A.Add -> L.build_call op_f_func [| e1' ; e2'; L.const_int i32_t 1 |] "op_i" builder
+          | A.Sub -> L.build_call op_f_func [| e1' ; e2'; L.const_int i32_t 0 |] "op_i" builder
+          | A.Mult -> L.build_call mult_f_func [| e1'; e2' |] "mult_f" builder
+          | _ -> raise (Failure "interal error")
+          )
       | SBinop (e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in

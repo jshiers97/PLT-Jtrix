@@ -244,6 +244,8 @@ let check (globals, functions) =
           let ty = match op with
             Add | Sub | Mult | Div when same && t1 = Int   -> Int
           | Add | Sub | Mult | Div when same && t1 = Float -> Float
+          | Add | Sub | Mult       when same && t1 = IntMat -> IntMat
+          | Add | Sub | Mult       when same && t1 = FltMat -> FltMat
           | Equal | Neq            when same               -> Bool
           | Less | Leq | Greater | Geq
                      when same && (t1 = Int || t1 = Float) -> Bool
