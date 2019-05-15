@@ -63,6 +63,8 @@ let check (globals, functions) =
                                                  ("switchRows_f", [FltMat; Int; Int], FltMat);
                                                  ("size_i", [IntArr], Int);
                                                  ("size_f", [FltArr], Int);
+                                                 ("int_to_f", [Int], Float);
+                                                 ("f_to_int", [Float], Int); 
                                                  ]
   in
 

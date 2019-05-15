@@ -129,6 +129,16 @@ let translate (globals, functions) =
   let col_f_func : L.llvalue =
           L.declare_function "col_f" col_f_t the_module in
 
+  let f_to_in_t : L.lltype =
+          L.function_type float_t [| i32_t |] in
+  let f_to_int_func : L.llvalue =
+          L.declare_function "f_to_int" f_to_in_t the_module in
+
+  let int_to_f_t : L.lltype = 
+          L.function_type float_t [| i32_t |] in
+  let int_to_f_func : L.llvalue =
+          L.declare_function "int_to_f" int_to_f_t the_module in 
+
   let printf_t : L.lltype =
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
@@ -460,6 +470,10 @@ let translate (globals, functions) =
       | SCall ("size_f", [a]) ->
          let a' = expr builder a in
          L.build_fptosi (get_size a') i32_t "" builder
+      | SCall ("f_to_int", [e]) ->
+         L.build_fptosi (expr builder e) i32_t "int_from" builder
+      | SCall ("int_to_f", [e]) ->
+         L.build_sitofp (expr builder e) float_t "float_from" builder 
       | SCall (f, args) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in
