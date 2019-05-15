@@ -57,7 +57,7 @@ rule token = parse
 | "char"   { CHAR }
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
-| '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ']* '"' as str { STRINGLITERAL(str) }
+| '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ' '!' '.']* '"' as str { STRINGLITERAL(str) }
 | "int[]"  { INTARR }
 | "float[]" { FLTARR }
 | "Matrix<int>" { INTMATRIX }
