@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void | String | IntArr | FltArr | Char| IntMat | FltMat
+type typ = Int | Bool | Float | Void | String | IntArr | FltArr | Char | IntMat | FltMat
 
 type bind = typ * string
 
