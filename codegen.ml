@@ -41,7 +41,7 @@ let translate (globals, functions) =
   and float_mat_t = L.pointer_type float_arr_t
   in
 
-  (* Return the LLVM type for a MicroC type *)
+  (* Return the LLVM type for a Jtrix type *)
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t

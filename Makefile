@@ -7,18 +7,18 @@ test : all testall.sh
 # to test linking external code
 
 .PHONY : all
-all : microc.native matrix.o 
+all : jtrix.native matrix.o 
 
-# "make microc.native" compiles the compiler
+# "make jtrix.native" compiles the compiler
 #
 # The _tags file controls the operation of ocamlbuild, e.g., by including
 # packages, enabling warnings
 #
 # See https://github.com/ocaml/ocamlbuild/blob/master/manual/manual.adoc
 
-microc.native :
+jtrix.native :
 	opam config exec -- \
-	ocamlbuild -use-ocamlfind microc.native
+	ocamlbuild -use-ocamlfind jtrix.native
 
 # "make clean" removes all generated files
 
@@ -27,11 +27,6 @@ clean :
 	ocamlbuild -clean
 	rm -rf testall.log ocamlllvm *.diff
 	rm matrix.o
-
-# Testing the "printbig" example
-
-printbig : printbig.c
-	cc -o printbig -DBUILD_TEST printbig.c
 
 # Building the tarball
 
