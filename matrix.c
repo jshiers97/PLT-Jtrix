@@ -364,7 +364,6 @@ int** mult_i(int** e1, int** e2) {
 				sum += e1[i][a] * col[a];
 			}	
 			t[j] = sum;
-			printf("sum = %d\n", sum);
 		}
 		x[i] = t;
 	}
@@ -395,7 +394,6 @@ double** mult_f(double** e1, double** e2) {
 				sum += e1[i][a] * col[a];
 			}	
 			t[j] = sum;
-			printf("sum = %f\n", sum);
 		}
 		x[i] = t;
 	}
