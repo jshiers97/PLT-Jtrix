@@ -41,7 +41,7 @@ let translate (globals, functions) =
   and float_mat_t = L.pointer_type float_arr_t
   in
 
-  (* Return the LLVM type for a MicroC type *)
+  (* Return the LLVM type for a Jtrix type *)
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
@@ -64,6 +64,28 @@ let translate (globals, functions) =
         | _ -> L.const_int (ltype_of_typ t) 0
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
+  
+  
+  let mult_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; int_mat_t |] in
+  let mult_i_func : L.llvalue =
+          L.declare_function "mult_i" mult_i_t the_module in
+  
+  let mult_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; float_mat_t |] in
+  let mult_f_func : L.llvalue =
+          L.declare_function "mult_f" mult_f_t the_module in
+
+  let op_i_t : L.lltype =
+          L.var_arg_function_type int_mat_t [| int_mat_t; int_mat_t; i32_t |] in
+  let op_i_func : L.llvalue =
+          L.declare_function "op_i" op_i_t the_module in
+  
+  let op_f_t : L.lltype =
+          L.var_arg_function_type float_mat_t [| float_mat_t; float_mat_t; i32_t |] in
+  let op_f_func : L.llvalue =
+          L.declare_function "op_f" op_f_t the_module in
+  
   let idx_check_t : L.lltype =
           L.var_arg_function_type void_t [| i32_t ; i32_t |] in
   let idx_check_func : L.llvalue =
@@ -128,7 +150,17 @@ let translate (globals, functions) =
           L.var_arg_function_type float_arr_t [| float_mat_t; i32_t |] in
   let col_f_func : L.llvalue =
           L.declare_function "col_f" col_f_t the_module in
+(*
+  let f_to_int_t : L.lltype =
+          L.function_type float_t [| i32_t |] in
+  let f_to_int_func : L.llvalue =
+          L.declare_function "f_to_int" f_to_in_t the_module in
 
+  let int_to_f_t : L.lltype =
+          L.function_type float_t [| i32_t |] in
+  let int_to_f_func : L.llvalue =
+          L.declare_function "int_to_f" int_to_f_t the_module in
+*)
   let printf_t : L.lltype =
       L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
@@ -152,7 +184,7 @@ let translate (globals, functions) =
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and char_format_str = L.build_global_stringptr "%c\n" "fmt" builder
-    and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder
+    and float_format_str = L.build_global_stringptr "%.3f\n" "fmt" builder
     and new_line = L.build_global_stringptr "%s\n" "fmt" builder in
 
     (* Construct the function's "locals": formal arguments and locally
@@ -389,6 +421,22 @@ let translate (globals, functions) =
 	  | A.And | A.Or ->
 	      raise (Failure "internal error: semant should have rejected and/or on float")
 	  ) e1' e2' "tmp" builder
+      | SBinop ((A.IntMat, _) as e1, op, e2) ->
+          let e1' = expr builder e1 and e2' = expr builder e2 in
+          (match op with
+          | A.Add -> L.build_call op_i_func [| e1' ; e2'; L.const_int i32_t 1 |] "op_i" builder
+          | A.Sub -> L.build_call op_i_func [| e1' ; e2'; L.const_int i32_t 0 |] "op_i" builder
+          | A.Mult -> L.build_call mult_i_func [| e1'; e2'|] "mult_i" builder
+          | _ -> raise (Failure "interal error")
+          )
+      | SBinop ((A.FltMat, _) as e1, op, e2) ->
+          let e1' = expr builder e1 and e2' = expr builder e2 in
+          (match op with
+          | A.Add -> L.build_call op_f_func [| e1' ; e2'; L.const_int i32_t 1 |] "op_i" builder
+          | A.Sub -> L.build_call op_f_func [| e1' ; e2'; L.const_int i32_t 0 |] "op_i" builder
+          | A.Mult -> L.build_call mult_f_func [| e1'; e2' |] "mult_f" builder
+          | _ -> raise (Failure "interal error")
+          )
       | SBinop (e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
@@ -460,6 +508,10 @@ let translate (globals, functions) =
       | SCall ("size_f", [a]) ->
          let a' = expr builder a in
          L.build_fptosi (get_size a') i32_t "" builder
+      | SCall ("f_to_int", [e]) ->
+         L.build_fptosi (expr builder e) i32_t "int_from" builder
+      | SCall ("int_to_f", [e]) ->
+         L.build_sitofp (expr builder e) float_t "float_from" builder
       | SCall (f, args) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in

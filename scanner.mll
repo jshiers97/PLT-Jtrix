@@ -2,7 +2,7 @@
 
 {
 
-open Microcparse
+open Parse
 
 let list_of_string f l =
         let sep_arr = List.map String.trim (String.split_on_char ',' l) in
@@ -55,7 +55,7 @@ rule token = parse
 | "char"   { CHAR }
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
-| '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ']* '"' as str { STRINGLITERAL(str) }
+| '"' ['a'-'z' 'A'-'Z' '0'-'9' ' ' '!' '.']* '"' as str { STRINGLITERAL(str) }
 | "int[]"  { INTARR }
 | "float[]" { FLTARR }
 | "Matrix<int>" { INTMATRIX }
