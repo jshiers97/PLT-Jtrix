@@ -1,0 +1,65 @@
+bool check(Matrix<int> pc, Matrix<int> m) {
+	Matrix<int> check;
+	int[] dim;
+	bool c;
+	int i;
+
+	check = pc * m;
+	dim = check.dim_i();
+
+	for(i = 0; i < dim[0]; i = i++) {
+		check[i][0] = check[i][0] % 2;
+		if(check[i][0] != 0) {
+			return false;
+		}
+	}
+
+	return true; 
+
+}
+
+Matrix<int> encode(Matrix<int> gen, Matrix<int> m) {
+	Matrix<int> enc;
+
+	enc = gen * m;
+
+	return enc;
+}
+
+void main() {
+	Matrix<int> G;
+	Matrix<int> H;
+	Matrix<int> message;
+	Matrix<int> encoded;
+        int[]  encoded_dim;
+	int i;
+	int j;
+
+	G = [[1,1,0,1];[1,0,1,1];[1,0,0,0];[0,1,1,1];[0,1,0,0];[0,0,1,0];[0,0,0,1]];
+	H = [[1,0,1,0,1,0,1];[0,1,1,0,0,1,1];[0,0,0,1,1,1,1]];
+
+	message = [[1];[0];[1];[1]];
+
+	encoded = encode(G, message);
+	encoded_dim = encoded.dim_i();
+	for(i = 0; i < encoded_dim[0]; i = i++) {
+		for(j = 0; j < encoded_dim[1]; j = j++) {
+			encoded[i][j] = encoded[i][j] % 2;
+		}
+	}
+
+	if(check(H, encoded)) {
+		println("Encoded successfully");
+		for(i = 0; i < encoded_dim[0]; i = i++) {
+			for(j = 0; j < encoded_dim[1]; j = j++) {
+				print(encoded[i][j]);
+			}
+		}
+	}
+
+	free(G);
+	free(H);	
+	free(message);
+	free(encoded);
+
+}
