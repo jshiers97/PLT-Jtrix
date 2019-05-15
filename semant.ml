@@ -32,20 +32,20 @@ let check (globals, functions) =
   (**** Check functions ****)
 
   (* Collect function declarations for built-in functions: no bodies *)
-<<<<<<< HEAD
-  let built_in_decls = 
+  let built_in_decls =
     let add_bind map (name, ty, r) = StringMap.add name {
       typ = r;
-      fname = name; 
+      fname = name;
       formals = (let rec make_bind =
              function
              | [] -> []
-             | hd :: tl -> (hd, "x") :: (make_bind tl) 
+             | hd :: tl -> (hd, "x") :: (make_bind tl)
              in make_bind ty);
       locals = []; body = [] } map
     in List.fold_left add_bind StringMap.empty [ ("print", [Int], Void);
                                                  ("printb", [Bool], Void);
                                                  ("printf", [Float], Void);
+                                                 ("printc", [Char], Void);
                                                  ("println", [String], Void);
                                                  ("row_i", [IntMat; Int], IntArr);
                                                  ("row_f", [FltMat; Int], FltArr);
@@ -63,23 +63,7 @@ let check (globals, functions) =
                                                  ("switchRows_f", [FltMat; Int; Int], FltMat);
                                                  ("size_i", [IntArr], Int);
                                                  ("size_f", [FltArr], Int);
-                                                 ] 
-=======
-  let built_in_decls =
-    let add_bind map (name, ty) = StringMap.add name {
-      typ = Void;
-      fname = name;
-      formals = [(ty, "x")];
-      locals = []; body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", Int);
-			                         ("printb", Bool);
-			                         ("printf", Float);
-                               ("printc", Char);
-                                                 ("printbig", Int);
-                                                 ("println", String);
-                                                 ("printarr", IntArr);
-                                                 ("printfltarr", FltArr); ]
->>>>>>> feature-strings
+                                                 ]
   in
 
   (* Add function name to symbol table *)
@@ -91,11 +75,7 @@ let check (globals, functions) =
     in
     match fd with (* No duplicate functions or redefinitions of built-ins *)
          _ when StringMap.mem n built_in_decls -> make_err built_in_err
-<<<<<<< HEAD
-       | _ when StringMap.mem n map -> make_err dup_err  
-=======
        | _ when StringMap.mem n map -> make_err dup_err
->>>>>>> feature-strings
        | _ ->  StringMap.add n fd map
   in
 
@@ -142,14 +122,14 @@ let check (globals, functions) =
       | CharLit l -> (Char, SCharLit l)
       | StrLit l   -> (String, SStrLit l)
       | MatLit (m) -> let first_typ = fst (expr (List.hd m)) in
-                      let check_consistent a = 
+                      let check_consistent a =
                          if((fst(expr a)) != first_typ) then
                             raise (Failure "Inconsistent types in matrix") in
                       ignore(List.iter check_consistent m);
                       let eval a = match a with
                       | ArrLit (a) -> List.length a
                       | _ -> raise (Failure "Expected an array") in
-                      let check_col_consist e = 
+                      let check_col_consist e =
                          if((eval e) != (eval (List.hd m))) then
                             raise (Failure "Each row must have the same number of columns") in
                       ignore(List.iter check_col_consist m);
@@ -218,7 +198,6 @@ let check (globals, functions) =
          else raise (Failure "Expression is of wrong type")
          )
          else raise (Failure "Index must be an integer")
-<<<<<<< HEAD
       | InitArr(typ, e) ->
                 let check_e = match (expr e) with
                 | (Int, _) -> expr e
@@ -237,55 +216,6 @@ let check (globals, functions) =
                 | "float" -> FltMat
                 | _ -> raise (Failure "Invalid array type") in
                 (check_arr_type, SInitMat(typ, check_e r, check_e c))
-=======
-      | StdLib (v, f, e) ->
-         let v' = expr v in
-         let check_exp v = match (fst v) with
-         | IntMat -> 1
-         | FltMat -> 2
-         | String -> 0
-         | _ -> raise (Failure "Type does not have any standard library functions") in
-         if((check_exp v') = 0) then
-                 (
-                       (Int, SLiteral(5))
-                 )
-         else
-                let check_arg_num x a =
-                        if ((List.length x) != a) then raise (Failure "Wrong number of arguments") in
-                let check_args e =
-                        if(fst (expr e) != Int) then raise (Failure "Argument must be an integer") in
-                let e' = List.map expr e in
-                (match f with
-                | "col" -> check_arg_num e 1;
-                ignore(List.iter check_args e);
-                ((match (fst v') with
-                  | IntMat -> IntArr
-                  | FltMat -> FltArr)
-                , SStdLib(v', f, e'));
-                | "row" -> check_arg_num e 1;
-                ignore(List.iter check_args e);
-                ((match (fst v') with
-                  | IntMat -> IntArr
-                  | FltMat -> FltArr),
-                SStdLib(v', f, e'));
-                | "spliceColumn" -> check_arg_num e 1;
-                ignore(List.iter check_args e);
-                (fst v', SStdLib(v', f, e'));
-                | "spliceRow" -> check_arg_num e 1;
-                ignore(List.iter check_args e);
-                (fst v', SStdLib(v', f, e'));
-                | "switchRows" -> check_arg_num e 2;
-                ignore(List.iter check_args e);
-                (fst v', SStdLib(v', f, e'));
-                | "transpose" -> check_arg_num e 0;
-                (fst v', SStdLib(v', f, e'));
-                | "dim" -> check_arg_num e 0;
-                ((match (fst v') with
-                  | IntMat -> IntArr
-                  | FltMat -> FltArr),
-                SStdLib(v', f, e'));
-                | _ -> raise (Failure "Invalid matrix operation"))
->>>>>>> feature-strings
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex ->
@@ -321,19 +251,15 @@ let check (globals, functions) =
                        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                        string_of_typ t2 ^ " in " ^ string_of_expr e))
           in (ty, SBinop((t1, e1'), op, (t2, e2')))
-<<<<<<< HEAD
       | Free(e) ->
           let e' = expr e in
-          (match (fst e') with 
+          (match (fst e') with
           | IntArr -> (Void, SFree(e'))
           | IntMat -> (Void, SFree(e'))
           | FltArr -> (Void, SFree(e'))
           | FltMat -> (Void, SFree(e'))
           | _ -> raise (Failure "Cannot free expression"))
-      | Call(fname, args) as call -> 
-=======
       | Call(fname, args) as call ->
->>>>>>> feature-strings
           let fd = find_func fname in
           let param_length = List.length fd.formals in
           if List.length args != param_length then
