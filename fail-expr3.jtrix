@@ -1,0 +1,5 @@
+int main(){
+	c='c';
+	printc(c); /* won't bring, c is never declared*/
+	return 0;
+}
