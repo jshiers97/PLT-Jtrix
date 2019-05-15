@@ -1,0 +1,9 @@
+void main() {
+    Matrix<int> a;
+    a = new Matrix<int>[10][10];
+
+    a[9][7] = 5;
+
+    printb(5 == a[9][7]);
+    free(a);
+}
