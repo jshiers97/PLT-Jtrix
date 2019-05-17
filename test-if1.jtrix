@@ -1,0 +1,10 @@
+void main(){
+bool b;
+b = true;
+if(b){
+println("good");
+}
+else{
+  println("bad");
+}
+}
