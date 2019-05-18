@@ -1,0 +1,34 @@
+int ret5(){
+return 5;
+}
+
+bool retT(){
+return true;
+}
+
+string rets(){
+string s;
+s = "hello";
+return s;
+}
+
+int testcast(){
+int i;
+float j;
+j = 187.0;
+i = f_to_int(j);
+return i;
+}
+
+void main(){
+string s;
+int i;
+
+i = testcast();
+print(testcast());
+s = rets();
+println(s);
+print(ret5());
+printb(retT());
+println(rets());
+}
