@@ -1,0 +1,7 @@
+void main() {
+
+	for(i = 0; i < 5; i = i++) { /* undeclared variable i */
+		print(i);
+	}
+
+}

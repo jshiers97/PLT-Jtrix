@@ -1,0 +1,9 @@
+int main(){
+int i;
+int j;
+i = 1;
+j = 2;
+if(i>j){ print(0); }
+else{ print(1); }
+return 0;
+} 

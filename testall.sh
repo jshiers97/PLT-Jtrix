@@ -165,10 +165,9 @@ LLIFail() {
 
 which "$LLI" >> $globallog || LLIFail
 
-if [ ! -f printbig.o ]
+if [ ! -f matrix.o ]
 then
-    echo "Could not find printbig.o"
-    echo "Try \"make printbig.o\""
+    echo "Could not find matrix.o"
     exit 1
 fi
 
@@ -176,7 +175,7 @@ if [ $# -ge 1 ]
 then
     files=$@
 else
-    files="newtests/test-*.jtrix newtests/fail-*.jtrix"
+    files="tests/test-*.jtrix tests/fail-*.jtrix"
 fi
 
 for file in $files

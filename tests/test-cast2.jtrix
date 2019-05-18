@@ -1,0 +1,12 @@
+int main(){
+float f;
+float fl;
+int i;
+i = 5;
+print(i);
+f = int_to_f(i);
+printf(f);
+fl = int_to_f(f_to_int(f));
+printf(fl);
+return 0;
+}

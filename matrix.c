@@ -243,6 +243,8 @@ int** splice_row_i(int** old, int r) {
 		}
 		x[i-1] = t;
 	}
+
+	x[0][1] = x[0][1] - 1;
 	       	
 	return x;
 }
@@ -268,6 +270,8 @@ double** splice_row_f(double** old, int r) {
 		}
 		x[i-1] = t;
 	}
+
+	x[0][1] = x[0][1] - 1.;
 	       	
 	return x;
 }
@@ -280,11 +284,11 @@ int** transpose_i(int** old) {
 
 	x[0] = create_dim_i(old[0][2], old[0][1]);
 
-	for(; i < old[0][1] + 1; i++) {
+	for(; i < old[0][2] + 1; i++) {
 		int* t = (int *)malloc(sizeof(int) * (old[0][2] + 1));
 		assert(t != NULL);
 		t[0] = old[0][1];
-		for(int j = 1; j < old[0][2] + 1; j++) {
+		for(int j = 1; j < old[0][1] + 1; j++) {
 			t[j] = old[j][i];
 		}
 		x[i] = t;
@@ -299,11 +303,11 @@ double** transpose_f(double** old) {
 	assert(x != NULL);
 
 	x[0] = create_dim_f(old[0][2], old[0][1]);
-	for(; i < ((int) old[0][1]) + 1; i++) {
+	for(; i < ((int) old[0][2]) + 1; i++) {
 		double* t = (double *)malloc(sizeof(double)*(((int) old[0][2])+1));
 		assert(t != NULL);
 		t[0] = old[0][1];
-		for(int j = 1; j < ((int) old[0][2]) + 1; j++) {
+		for(int j = 1; j < ((int) old[0][1]) + 1; j++) {
 			t[j] = old[j][i];
 		}
 		x[i] = t;
@@ -398,4 +402,12 @@ double** mult_f(double** e1, double** e2) {
 	}
 
 	return x;
+}
+
+int size_i(int* a) {
+	return a[0];
+}
+
+int size_f(double* a) {
+	return (int) a[0];
 }

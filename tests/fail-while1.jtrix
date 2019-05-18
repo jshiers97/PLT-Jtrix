@@ -1,0 +1,4 @@
+void main() {
+	while(i < 5) { /* undeclared variable i */
+	}
+}
