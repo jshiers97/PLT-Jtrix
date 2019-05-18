@@ -1,0 +1,8 @@
+void main() {
+	int[] a;
+	a = new int[100];
+
+	print(a.size_i());
+	
+	free(a);
+}

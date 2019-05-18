@@ -1,0 +1,13 @@
+void main() {
+	Matrix<int> a;
+	
+	a = [[1,2];[3,4]];
+	a.switchRows_i(0, 1);
+
+	printb(a[0][0] == 3);
+	printb(a[0][1] == 4);
+	printb(a[1][0] == 1);
+	printb(a[1][1] == 2);
+
+	free(a);
+}

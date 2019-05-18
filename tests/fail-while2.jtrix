@@ -1,0 +1,4 @@
+void main() {
+	while(6) { /* non-boolean expression */
+	}
+}

@@ -1,0 +1,13 @@
+void main() {
+	Matrix<float> a;
+	float[] b;
+
+	a = new Matrix<float>[10][10];
+	b = a.dim_f();
+
+	printb(b[0] == 10.);
+	printb(b[1] == 10.);
+
+	free(b);
+	free(a);
+}

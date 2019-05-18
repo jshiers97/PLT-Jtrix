@@ -1,0 +1,12 @@
+void main() {
+    Matrix<int> a;
+    int[] dim;
+
+    a = new Matrix<int>[10][10];
+    dim = a.dim_i();
+
+    print(dim[0]);
+    print(dim[1]);
+
+    free(a);
+}

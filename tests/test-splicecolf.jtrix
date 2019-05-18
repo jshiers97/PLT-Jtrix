@@ -1,0 +1,23 @@
+void main() {
+	Matrix<float> a;
+	Matrix<float> b;
+	float[] dim;
+	int i;
+	int j;
+
+	a = [[1.2,2.3];[1.5,2.6]];
+	b = a.spliceColumn_f(0);
+
+	dim = b.dim_f();
+
+	for(i = 0; i < f_to_int(dim[0]); i = i++) {
+		for(j = 0; j < f_to_int(dim[1]); j = j++) {
+			printf(b[i][j]);
+		}
+	}
+
+	free(dim);
+	free(b);
+	free(a);
+
+}

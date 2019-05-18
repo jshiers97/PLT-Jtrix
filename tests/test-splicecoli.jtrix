@@ -1,0 +1,21 @@
+void main() {
+	Matrix<int> a;
+	Matrix<int> b;
+	int[] dim;
+	int i;
+	int j;
+
+	a = [[1,0];[1,0]];
+	b = a.spliceColumn_i(1);
+
+	dim = b.dim_i();
+	for(i = 0; i < dim[0]; i = i++) {
+		for(j = 0; j < dim[1]; j = j++) {
+			print(b[i][j]);
+		}	
+	}
+	
+	free(dim);
+	free(a);
+	free(b);
+}

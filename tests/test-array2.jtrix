@@ -1,0 +1,33 @@
+int[] addOne(int[] a) {
+	int c;
+	int i;
+
+	c = a.size_i();
+	for(i = 0; i < c; i = i++) {
+		a[i] = a[i]++;
+	}
+
+	return a;
+}
+
+
+void main() {
+	int[] a;
+	int c;
+	int i;
+	
+	a = new int[10];
+	c = a.size_i();
+
+	for(i = 0; i < a.size_i(); i = i++) {
+		a[i] = i;
+	}
+
+	a = addOne(a);
+	
+	for(i = 0; i < c; i = i++) {
+		print(a[i]);
+	}
+	
+	free(a);
+}

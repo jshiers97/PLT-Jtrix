@@ -1,0 +1,6 @@
+void main() {
+
+	for(; 5; ) { /* non-boolean expression where a boolean expression should be */
+		print(5);
+	}
+}

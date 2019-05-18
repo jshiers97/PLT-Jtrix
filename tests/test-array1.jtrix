@@ -1,0 +1,13 @@
+void main() {
+	int[] a;
+	int i;
+	int c;
+
+	a = [100, 200, 300];
+	c = a.size_i();
+	for(i = 0; i < c; i = i++) {
+		print(a[i]);
+	}
+	
+	free(a);
+}
