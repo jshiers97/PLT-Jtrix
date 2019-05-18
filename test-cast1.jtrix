@@ -1,0 +1,10 @@
+int main(){
+int i;
+float f;
+i = 3;
+f = int_to_f(i);
+print(i);
+printf(f);
+f = int_to_f(i) + f;
+printf(f);
+} 
