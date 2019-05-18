@@ -1,0 +1,8 @@
+void main() {
+	float[] a;
+	a = new float[137];
+
+	print(a.size_f());
+
+	free(a);
+}

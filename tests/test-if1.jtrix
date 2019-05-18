@@ -1,0 +1,11 @@
+int main(){
+bool b;
+b = true;
+if(b){
+println("good");
+}
+else{
+  println("bad");
+}
+return 0;
+}

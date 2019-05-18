@@ -1,11 +1,11 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or
+          And | Or | Mod
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Float | Void
+type typ = Int | Bool | Float | Void | String | IntArr | FltArr | Char | IntMat | FltMat
 
 type bind = typ * string
 
@@ -13,11 +13,23 @@ type expr =
     Literal of int
   | Fliteral of string
   | BoolLit of bool
+  | StrLit of string
+  | MatLit of expr list
+  | ArrLit of expr list
+  | ArrGe of string * expr
+  | ArrSe of string * expr * expr
+  | MatGe of string * expr * expr
+  | MatSe of string * expr * expr * expr
+  | InitArr of string * expr
+  | InitMat of string * expr * expr
   | Id of string
+  (*added char lit*)
+  | CharLit of char
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
   | Call of string * expr list
+  | Free of expr
   | Noexpr
 
 type stmt =
@@ -53,6 +65,7 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
+  | Mod -> "%"
 
 let string_of_uop = function
     Neg -> "-"
@@ -63,6 +76,17 @@ let rec string_of_expr = function
   | Fliteral(l) -> l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
+  | StrLit(l) -> l
+  | CharLit(l) -> Char.escaped l
+  | ArrLit(l) -> let str_l = List.map string_of_expr l in
+                 "[ " ^ String.concat ", " str_l ^ " ]"
+  | MatLit(l) -> "[" ^ (String.concat "; " (List.map string_of_expr l)) ^ "]"
+  | ArrGe(v, e) -> v ^ "[" ^ (string_of_expr e) ^ "]"
+  | ArrSe(v, i, e) -> v ^ "[" ^ (string_of_expr i) ^ "] = " ^ (string_of_expr e)
+  | MatGe(v, r, c) -> v ^ "[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "]"
+  | MatSe(v, r, c, e) ->   v ^ "[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "] = " ^ (string_of_expr e)
+  | InitArr(t, e) -> "new " ^ t ^ "[" ^ (string_of_expr e) ^ "]"
+  | InitMat(t, r, c) -> "new Matrix<" ^ t ^ ">[" ^ (string_of_expr r) ^ "][" ^ (string_of_expr c) ^ "]"
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
@@ -70,6 +94,7 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Free(e) -> "free(" ^ string_of_expr e ^ ")"
   | Noexpr -> ""
 
 let rec string_of_stmt = function
@@ -90,6 +115,12 @@ let string_of_typ = function
   | Bool -> "bool"
   | Float -> "float"
   | Void -> "void"
+  | String -> "string"
+  | IntArr -> "intarr"
+  | FltArr -> "fltarr"
+  | IntMat -> "intmat"
+  | FltMat -> "fltmat"
+  | Char -> "char"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

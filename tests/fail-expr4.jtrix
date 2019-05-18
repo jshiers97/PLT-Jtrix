@@ -1,0 +1,11 @@
+int main(){
+	bool x;
+	bool y;
+	bool z;
+	x="hi"; /*WRONG, x is a boolean not a string"*/
+	y=true;
+	z=x && y;
+	printb(z); /* will not work, x is a string */
+	return 0;
+}
+

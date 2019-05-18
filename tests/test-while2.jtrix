@@ -1,0 +1,19 @@
+int main() {
+	int i;
+	bool t;
+
+	t = true;
+	i = 10;
+
+	while(t) {
+		if(i == 5) {
+			t = false;
+		}
+		else {
+			printb(t);
+			i = i--;
+		}
+	}
+
+	return 0;
+}

@@ -1,0 +1,11 @@
+void main() {
+	Matrix<float> a;
+	a = [[1.2];[2.3]];
+
+	a.switchRows_f(0, 1);
+
+	printb(a[0][0] == 2.3);
+	printb(a[1][0] == 1.2);
+
+	free(a);	
+}

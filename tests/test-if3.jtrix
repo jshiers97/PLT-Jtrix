@@ -1,0 +1,15 @@
+int main(){
+bool t;
+bool f;
+t = true;
+f = false;
+if(f){
+println("no");
+}else{
+println("yes");
+}
+if(t){
+println("yeet");
+}
+return 0;
+}
